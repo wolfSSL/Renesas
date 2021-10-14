@@ -25,6 +25,15 @@ Renesas Trusted Secure IP Driver (TSIP) and Secure Cryptographic Engine (SCE).
 Complete details can be found in each example's respective README, located
 in the subdirectory linked below.
 
+### Current Software Package / Driver Support
+
+|MCU|Software / Driver|
+|:--|:--|
+|Synergy S7G2|SSP 1.7.0|
+|RA6M3|FSP 0.8.0|
+|RX65N|TSIP 1.10|
+|RX72N|TSIP 1.13|
+
 ### Available Example Projects
 
 wolfSSL maintains example projects for the following supported Renesas
@@ -33,10 +42,27 @@ directory.
 
 |Microcontroller|Platform|Example Project|
 |:--|:--|:--|
-|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl/Renesas/e2studio/DK-S7G2)|
-|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl/Renesas/e2studio/RA6M3)|
-|RX65N|GR-ROSE|[IDE/Renesas/e2studio/GR-ROSE](./wolfssl/Renesas/e2studio/GR-ROSE)|
-|RX72N|RX72NEnvisionKit|[IDE/Renesas/e2studio/RX72NEnvisionKit](./wolfssl/Renesas/e2studio/RX72NEnvisionKit)|
+|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/DK-S7G2)|
+|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/RA6M3)|
+|RX65N|GR-ROSE|[IDE/Renesas/e2studio/GR-ROSE](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/GR-ROSE)|
+|RX72N|RX72NEnvisionKit|[IDE/Renesas/e2studio/RX72NEnvisionKit](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/RX72NEnvisionKit)|
+
+### Further Resources
+
+#### wolfSSL Website
+[wolfSSL Renesas Support](https://www.wolfssl.com/docs/renesas/) \
+[wolfSSL TSIP Support](https://www.wolfssl.com/docs/wolfssl-renesas-tsip/)
+
+#### Renesas Website
+
+**MCU Resources**\
+[Renesas RX MCUs](https://www.renesas.com/us/en/products/microcontrollers-microprocessors/rx-32-bit-performance-efficiency-mcus) \
+[Renesas RA MCUs](https://www.renesas.com/us/en/products/microcontrollers-microprocessors/ra-cortex-m-mcus) \
+[Renesas Synergy MCUs](https://www.renesas.com/us/en/products/microcontrollers-microprocessors/renesas-synergy-platform-mcus)
+
+**Driver and Module Resources**\
+[Renesas Trusted Secure IP Driver (TSIP)](https://www.renesas.com/us/en/software-tool/trusted-secure-ip-driver) \
+[Renesas Secure Cryptographic Module (SCE) HAL Module Guide](https://www.renesas.com/us/en/document/apn/sce-hal-module-guide-application-project)
 
 ## Support
 
