@@ -1,0 +1,11 @@
+# vim:ft=automake
+# included from Top Level Makefile.am
+# All paths should be given relative to the root
+
+include IDE/Renesas/e2studio/DK-S7G2/include.am
+include IDE/Renesas/cs+/Projects/include.am
+include IDE/Renesas/e2studio/Projects/include.am
+include IDE/Renesas/e2studio/RA6M3/include.am
+include IDE/Renesas/e2studio/GR-ROSE/include.am
+include IDE/Renesas/e2studio/RX72NEnvisionKit/include.am
+
