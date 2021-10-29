@@ -1,8 +1,9 @@
-# wolfSSL Products for Renesas
+# wolfSSL Product for Renesas
 
-This repository contains commercially licensed wolfSSL products for use on
+This repository contains commercially licensed wolfSSL product code for use on
 specified Renesas platforms. This code is only properly licensed when following
-the license terms in the LICENSE file included in this repository.
+the license terms in the LICENSE file included in this repository. wolfCrypt only
+usage is excluded from this license.
 
 ## wolfSSL Embedded SSL/TLS Library
 
@@ -19,7 +20,7 @@ This repository currently contains the following wolfSSL product versions.
 
 ## wolfSSL Renesas Support
 
-The wolfSSL and wolfCrypt libraries support several Renesas MCUs, with example
+The wolfSSL library supports several Renesas MCUs, with example
 projects for either e2studio or CS+. wolfSSL inludes support for leveraging the
 Renesas Trusted Secure IP Driver (TSIP) and Secure Cryptographic Engine (SCE).
 Complete details can be found in each example's respective README, located
@@ -47,7 +48,20 @@ directory.
 |RX65N|GR-ROSE|[IDE/Renesas/e2studio/GR-ROSE](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/GR-ROSE)|
 |RX72N|RX72NEnvisionKit|[IDE/Renesas/e2studio/RX72NEnvisionKit](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/RX72NEnvisionKit)|
 
-### Further Resources
+## Additional wolfSSL Products to Explore
+
+|Product|Description|
+|:--|:--|
+|[wolfSH](https://www.wolfssl.com/products/wolfssh/)|Lightweight SSHv2 library
+|[wolfMQTT](https://www.wolfssl.com/products/wolfmqtt/)|Lightweight MQTT client
+|[wolfBoot](https://www.wolfssl.com/products/wolfboot/)|Portable secure bootloader
+|[wolfSentry](https://www.wolfssl.com/products/wolfsentry/)|Embedded IDPS
+|[wolfCrypt FIPS 140-2/3](https://www.wolfssl.com/license/fips/)|FIPS 140-2/3 validated crypto
+|[wolfCrypt FIPS Ready](https://www.wolfssl.com/license/fips/)|FIPS crypto without a validation
+|[wolfTPM](https://www.wolfssl.com/products/wolftpm/)|Portable TPM 2.0 library
+|[tiny-curl](https://www.wolfssl.com/products/curl/#panel-34394-3-0-0)|Lightweight version of libcurl
+
+## Further Resources
 
 #### wolfSSL Website
 [wolfSSL Renesas Support](https://www.wolfssl.com/docs/renesas/) \
@@ -66,5 +80,5 @@ directory.
 
 ## Support
 
-For support inquiries and questions, please email support@wolfssl.com.
+For support inquiries and questions, please email support@wolfssl.com. Feel free to reach out to info@wolfssl.jp as well.
 
