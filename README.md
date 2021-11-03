@@ -16,7 +16,7 @@ This repository currently contains the following wolfSSL product versions.
 
 |Product|Version|Notes|
 |:--|:--|:--|
-|wolfSSL|4.8.1 dev|Development version matching wolfSSL repo commit b2b39f01b7fb695cad33e5ffcec823cb67c16bc7. Includes TSIP 1.13 support. Stable wolfSSL version will be updated here next wolfSSL stable release.|
+|wolfSSL|5.0.0 stable|Official wolfSSL 5.0.0 release, includes TSIP 1.13 support.|
 
 ## wolfSSL Renesas Support
 
