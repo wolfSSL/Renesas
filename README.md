@@ -43,10 +43,10 @@ directory.
 
 |Microcontroller|Platform|Example Project|
 |:--|:--|:--|
-|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/DK-S7G2)|
-|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/RA6M3)|
-|RX65N|GR-ROSE|[IDE/Renesas/e2studio/GR-ROSE](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/GR-ROSE)|
-|RX72N|RX72NEnvisionKit|[IDE/Renesas/e2studio/RX72NEnvisionKit](./wolfssl-4.8.1-commercial/IDE/Renesas/e2studio/RX72NEnvisionKit)|
+|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-5.0.0-commercial/IDE/Renesas/e2studio/DK-S7G2)|
+|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-5.0.0-commercial/IDE/Renesas/e2studio/RA6M3)|
+|RX65N|GR-ROSE|[IDE/Renesas/e2studio/GR-ROSE](./wolfssl-5.0.0-commercial/IDE/Renesas/e2studio/GR-ROSE)|
+|RX72N|RX72NEnvisionKit|[IDE/Renesas/e2studio/RX72NEnvisionKit](./wolfssl-5.0.0-commercial/IDE/Renesas/e2studio/RX72NEnvisionKit)|
 
 ## Additional wolfSSL Products to Explore
 
