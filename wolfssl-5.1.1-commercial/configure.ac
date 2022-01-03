@@ -7,7 +7,7 @@
 #
 AC_COPYRIGHT([Copyright (C) 2006-2020 wolfSSL Inc.])
 AC_PREREQ([2.69])
-AC_INIT([wolfssl],[5.1.0],[https://github.com/wolfssl/wolfssl/issues],[wolfssl],[https://www.wolfssl.com])
+AC_INIT([wolfssl],[5.1.1],[https://github.com/wolfssl/wolfssl/issues],[wolfssl],[https://www.wolfssl.com])
 AC_CONFIG_AUX_DIR([build-aux])
 
 # The following sets CFLAGS to empty if unset on command line.  We do not
@@ -38,7 +38,7 @@ LT_INIT([disable-static win32-dll])
 AC_ARG_VAR(EXTRA_CFLAGS, [Extra CFLAGS to add to autoconf-computed arg list.  Can also supply directly to make.])
 
 #shared library versioning
-WOLFSSL_LIBRARY_VERSION=31:0:1
+WOLFSSL_LIBRARY_VERSION=31:1:1
 #                        | | |
 #                 +------+ | +---+
 #                 |        |     |
@@ -216,8 +216,9 @@ AC_ARG_ENABLE([fips],
 #   v5-RC8 - historical FIPS 140-3 (wolfCrypt WCv5.0-RC8)
 #   v5-RC9 - historical FIPS 140-3 (wolfCrypt WCv5.0-RC9)
 #   v5-RC10 - historical FIPS 140-3, wolfCrypt/fips WCv5.0-RC10
-#   v5-RC11 - FIPS 140-3, wolfCrypt/fips WCv5.0-RC11
-#   v5 - currently, alias for v5-RC11
+#   v5-RC11 - historical FIPS 140-3, wolfCrypt/fips WCv5.0-RC11
+#   v5-RC12 - FIPS 140-3, wolfCrypt/fips WCv5.0-RC12
+#   v5 - currently, alias for v5-RC12
 #   v5-ready - FIPS 140-3 settings with in-tree wolfcrypt sources, feature locked
 #   v5-dev - FIPS 140-3 settings with in-tree wolfcrypt sources, features freely adjustable
 #   ready - currently, same as v5-ready
@@ -264,8 +265,14 @@ AS_CASE([$ENABLED_FIPS],
         HAVE_FIPS_VERSION_MINOR=2
         ENABLED_FIPS="yes"
     ],
-    [v5|v5-RC11],[
+    [v5-RC11],[
         FIPS_VERSION="v5-RC11"
+        HAVE_FIPS_VERSION=5
+        HAVE_FIPS_VERSION_MINOR=2
+        ENABLED_FIPS="yes"
+    ],
+    [v5|v5-RC12],[
+        FIPS_VERSION="v5-RC12"
         HAVE_FIPS_VERSION=5
         HAVE_FIPS_VERSION_MINOR=2
         ENABLED_FIPS="yes"
