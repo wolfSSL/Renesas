@@ -13,7 +13,10 @@
  *   cd ../scripts
  *   ruby ./x25519/x25519.rb arm32 ../wolfssl/wolfcrypt/src/port/arm/armv8-32-curve25519.c
  */
-#if defined(WOLFSSL_ARMASM) && defined(HAVE_CURVE25519)
+
+#include <wolfssl/wolfcrypt/settings.h>
+
+#ifdef WOLFSSL_ARMASM
 #ifndef __aarch64__
 #include <stdint.h>
 #ifdef HAVE_CONFIG_H
@@ -21,6 +24,8 @@
 #endif /* HAVE_CONFIG_H */
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/wolfcrypt/fe_operations.h>
+
+#ifdef HAVE_CURVE25519
 
 void fe_init()
 {
@@ -53,10 +58,10 @@ void fe_frombytes(fe out, const unsigned char* in)
 void fe_tobytes(unsigned char* out, const fe n)
 {
     __asm__ __volatile__ (
-        "ldrd	r2, r3, [%[in]]\n\t"
-        "ldrd	r12, lr, [%[in], #8]\n\t"
-        "ldrd	r4, r5, [%[in], #16]\n\t"
-        "ldrd	r6, r7, [%[in], #24]\n\t"
+        "ldrd	r2, r3, [%[n]]\n\t"
+        "ldrd	r12, lr, [%[n], #8]\n\t"
+        "ldrd	r4, r5, [%[n], #16]\n\t"
+        "ldrd	r6, r7, [%[n], #24]\n\t"
         "adds	r8, r2, #19\n\t"
         "adcs	r8, r3, #0\n\t"
         "adcs	r8, r12, #0\n\t"
@@ -3846,23 +3851,26 @@ void fe_ge_to_p2(fe rx, fe ry, fe rz, const fe px, const fe py, const fe pz, con
         "str	%[ry], [sp, #4]\n\t"
         "str	%[rz], [sp, #8]\n\t"
         "str	%[px], [sp, #12]\n\t"
-        "ldr	r2, [sp, #32]\n\t"
+        "ldr	r2, [sp, #28]\n\t"
         "ldr	r1, [sp, #12]\n\t"
         "ldr	r0, [sp]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #28]\n\t"
-        "ldr	r1, [sp, #24]\n\t"
+        "ldr	r2, [sp, #24]\n\t"
+        "ldr	r1, [sp, #20]\n\t"
         "ldr	r0, [sp, #4]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #32]\n\t"
-        "ldr	r1, [sp, #28]\n\t"
+        "ldr	r2, [sp, #28]\n\t"
+        "ldr	r1, [sp, #24]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_mul\n\t"
         "add	sp, sp, #16\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [px] "+r" (px)
         :
         : "memory", "lr"
     );
+    (void)py;
+    (void)pz;
+    (void)pt;
 }
 
 void fe_ge_to_p3(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz, const fe pt)
@@ -3873,27 +3881,31 @@ void fe_ge_to_p3(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe 
         "str	%[ry], [sp, #4]\n\t"
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
-        "ldr	r2, [sp, #36]\n\t"
-        "ldr	r1, [sp, #24]\n\t"
-        "ldr	r0, [sp]\n\t"
-        "bl	fe_mul\n\t"
         "ldr	r2, [sp, #32]\n\t"
-        "ldr	r1, [sp, #28]\n\t"
-        "ldr	r0, [sp, #4]\n\t"
-        "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #36]\n\t"
-        "ldr	r1, [sp, #32]\n\t"
-        "ldr	r0, [sp, #8]\n\t"
+        "ldr	r1, [sp, #20]\n\t"
+        "ldr	r0, [sp]\n\t"
         "bl	fe_mul\n\t"
         "ldr	r2, [sp, #28]\n\t"
         "ldr	r1, [sp, #24]\n\t"
+        "ldr	r0, [sp, #4]\n\t"
+        "bl	fe_mul\n\t"
+        "ldr	r2, [sp, #32]\n\t"
+        "ldr	r1, [sp, #28]\n\t"
+        "ldr	r0, [sp, #8]\n\t"
+        "bl	fe_mul\n\t"
+        "ldr	r2, [sp, #24]\n\t"
+        "ldr	r1, [sp, #20]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_mul\n\t"
         "add	sp, sp, #16\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "lr"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
+    (void)pt;
 }
 
 void fe_ge_dbl(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz)
@@ -3904,15 +3916,15 @@ void fe_ge_dbl(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "str	%[ry], [sp, #4]\n\t"
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
-        "ldr	r1, [sp, #88]\n\t"
+        "ldr	r1, [sp, #52]\n\t"
         "ldr	r0, [sp]\n\t"
         "bl	fe_sq\n\t"
-        "ldr	r1, [sp, #92]\n\t"
+        "ldr	r1, [sp, #56]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_sq\n\t"
         "ldr	r0, [sp, #4]\n\t"
-        "ldr	r1, [sp, #88]\n\t"
-        "ldr	r2, [sp, #92]\n\t"
+        "ldr	r1, [sp, #52]\n\t"
+        "ldr	r2, [sp, #56]\n\t"
         /* Add */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4099,7 +4111,7 @@ void fe_ge_dbl(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r5, r6, [r0, #8]\n\t"
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
-        "ldr	r1, [sp, #96]\n\t"
+        "ldr	r1, [sp, #60]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_sq2\n\t"
         "ldr	r0, [sp, #12]\n\t"
@@ -4144,10 +4156,13 @@ void fe_ge_dbl(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
         "add	sp, sp, #16\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
 }
 
 void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz, const fe pt, const fe qxy2d, const fe qyplusx, const fe qyminusx)
@@ -4159,8 +4174,8 @@ void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
         "ldr	r0, [sp]\n\t"
-        "ldr	r1, [sp, #108]\n\t"
-        "ldr	r2, [sp, #104]\n\t"
+        "ldr	r1, [sp, #72]\n\t"
+        "ldr	r2, [sp, #68]\n\t"
         /* Add */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4201,8 +4216,8 @@ void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
         "ldr	r0, [sp, #4]\n\t"
-        "ldr	r1, [sp, #108]\n\t"
-        "ldr	r2, [sp, #104]\n\t"
+        "ldr	r1, [sp, #72]\n\t"
+        "ldr	r2, [sp, #68]\n\t"
         /* Sub */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4242,16 +4257,16 @@ void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "strd	r5, r6, [r0, #8]\n\t"
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
-        "ldr	r2, [sp, #124]\n\t"
+        "ldr	r2, [sp, #88]\n\t"
         "ldr	r1, [sp]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #128]\n\t"
+        "ldr	r2, [sp, #92]\n\t"
         "ldr	r1, [sp, #4]\n\t"
         "ldr	r0, [sp, #4]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #116]\n\t"
-        "ldr	r1, [sp, #120]\n\t"
+        "ldr	r2, [sp, #80]\n\t"
+        "ldr	r1, [sp, #84]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_mul\n\t"
         "ldr	r0, [sp, #4]\n\t"
@@ -4357,7 +4372,7 @@ void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "ldr	r0, [sp, #8]\n\t"
-        "ldr	r1, [sp, #112]\n\t"
+        "ldr	r1, [sp, #76]\n\t"
         /* Double */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4491,10 +4506,14 @@ void fe_ge_madd(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "add	sp, sp, #32\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
+    (void)pt;
     (void)qxy2d;
     (void)qyplusx;
     (void)qyminusx;
@@ -4509,8 +4528,8 @@ void fe_ge_msub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
         "ldr	r0, [sp]\n\t"
-        "ldr	r1, [sp, #108]\n\t"
-        "ldr	r2, [sp, #104]\n\t"
+        "ldr	r1, [sp, #72]\n\t"
+        "ldr	r2, [sp, #68]\n\t"
         /* Add */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4551,8 +4570,8 @@ void fe_ge_msub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
         "ldr	r0, [sp, #4]\n\t"
-        "ldr	r1, [sp, #108]\n\t"
-        "ldr	r2, [sp, #104]\n\t"
+        "ldr	r1, [sp, #72]\n\t"
+        "ldr	r2, [sp, #68]\n\t"
         /* Sub */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4592,16 +4611,16 @@ void fe_ge_msub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "strd	r5, r6, [r0, #8]\n\t"
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
-        "ldr	r2, [sp, #128]\n\t"
+        "ldr	r2, [sp, #92]\n\t"
         "ldr	r1, [sp]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #124]\n\t"
+        "ldr	r2, [sp, #88]\n\t"
         "ldr	r1, [sp, #4]\n\t"
         "ldr	r0, [sp, #4]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #116]\n\t"
-        "ldr	r1, [sp, #120]\n\t"
+        "ldr	r2, [sp, #80]\n\t"
+        "ldr	r1, [sp, #84]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_mul\n\t"
         "ldr	r0, [sp, #4]\n\t"
@@ -4707,7 +4726,7 @@ void fe_ge_msub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "ldr	r0, [sp, #8]\n\t"
-        "ldr	r1, [sp, #112]\n\t"
+        "ldr	r1, [sp, #76]\n\t"
         /* Double */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4841,10 +4860,14 @@ void fe_ge_msub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe p
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "add	sp, sp, #32\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
+    (void)pt;
     (void)qxy2d;
     (void)qyplusx;
     (void)qyminusx;
@@ -4859,8 +4882,8 @@ void fe_ge_add(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
         "ldr	r0, [sp]\n\t"
-        "ldr	r1, [sp, #172]\n\t"
-        "ldr	r2, [sp, #168]\n\t"
+        "ldr	r1, [sp, #136]\n\t"
+        "ldr	r2, [sp, #132]\n\t"
         /* Add */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4901,8 +4924,8 @@ void fe_ge_add(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
         "ldr	r0, [sp, #4]\n\t"
-        "ldr	r1, [sp, #172]\n\t"
-        "ldr	r2, [sp, #168]\n\t"
+        "ldr	r1, [sp, #136]\n\t"
+        "ldr	r2, [sp, #132]\n\t"
         /* Sub */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -4942,20 +4965,20 @@ void fe_ge_add(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r5, r6, [r0, #8]\n\t"
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
-        "ldr	r2, [sp, #192]\n\t"
+        "ldr	r2, [sp, #156]\n\t"
         "ldr	r1, [sp]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #196]\n\t"
+        "ldr	r2, [sp, #160]\n\t"
         "ldr	r1, [sp, #4]\n\t"
         "ldr	r0, [sp, #4]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #180]\n\t"
-        "ldr	r1, [sp, #188]\n\t"
+        "ldr	r2, [sp, #144]\n\t"
+        "ldr	r1, [sp, #152]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #184]\n\t"
-        "ldr	r1, [sp, #176]\n\t"
+        "ldr	r2, [sp, #148]\n\t"
+        "ldr	r1, [sp, #140]\n\t"
         "ldr	r0, [sp]\n\t"
         "bl	fe_mul\n\t"
         "add	r0, sp, #16\n\t"
@@ -5196,10 +5219,14 @@ void fe_ge_add(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "add	sp, sp, #0x60\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
+    (void)pt;
     (void)qz;
     (void)qt2d;
     (void)qyplusx;
@@ -5215,8 +5242,8 @@ void fe_ge_sub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "str	%[rz], [sp, #8]\n\t"
         "str	%[rt], [sp, #12]\n\t"
         "ldr	r0, [sp]\n\t"
-        "ldr	r1, [sp, #172]\n\t"
-        "ldr	r2, [sp, #168]\n\t"
+        "ldr	r1, [sp, #136]\n\t"
+        "ldr	r2, [sp, #132]\n\t"
         /* Add */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -5257,8 +5284,8 @@ void fe_ge_sub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
         "ldr	r0, [sp, #4]\n\t"
-        "ldr	r1, [sp, #172]\n\t"
-        "ldr	r2, [sp, #168]\n\t"
+        "ldr	r1, [sp, #136]\n\t"
+        "ldr	r2, [sp, #132]\n\t"
         /* Sub */
         "ldrd	%[rt], r4, [r1]\n\t"
         "ldrd	r5, r6, [r1, #8]\n\t"
@@ -5298,20 +5325,20 @@ void fe_ge_sub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "strd	r5, r6, [r0, #8]\n\t"
         "strd	r7, r8, [r0, #16]\n\t"
         "strd	r9, r10, [r0, #24]\n\t"
-        "ldr	r2, [sp, #196]\n\t"
+        "ldr	r2, [sp, #160]\n\t"
         "ldr	r1, [sp]\n\t"
         "ldr	r0, [sp, #8]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #192]\n\t"
+        "ldr	r2, [sp, #156]\n\t"
         "ldr	r1, [sp, #4]\n\t"
         "ldr	r0, [sp, #4]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #180]\n\t"
-        "ldr	r1, [sp, #188]\n\t"
+        "ldr	r2, [sp, #144]\n\t"
+        "ldr	r1, [sp, #152]\n\t"
         "ldr	r0, [sp, #12]\n\t"
         "bl	fe_mul\n\t"
-        "ldr	r2, [sp, #184]\n\t"
-        "ldr	r1, [sp, #176]\n\t"
+        "ldr	r2, [sp, #148]\n\t"
+        "ldr	r1, [sp, #140]\n\t"
         "ldr	r0, [sp]\n\t"
         "bl	fe_mul\n\t"
         "add	r0, sp, #16\n\t"
@@ -5552,15 +5579,21 @@ void fe_ge_sub(fe rx, fe ry, fe rz, fe rt, const fe px, const fe py, const fe pz
         "adc	r10, r10, lr\n\t"
         "strd	r9, r10, [r1, #24]\n\t"
         "add	sp, sp, #0x60\n\t"
-        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt), [px] "+r" (px), [py] "+r" (py), [pz] "+r" (pz), [pt] "+r" (pt)
+        : [rx] "+r" (rx), [ry] "+r" (ry), [rz] "+r" (rz), [rt] "+r" (rt)
         :
         : "memory", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
     );
+    (void)px;
+    (void)py;
+    (void)pz;
+    (void)pt;
     (void)qz;
     (void)qt2d;
     (void)qyplusx;
     (void)qyminusx;
 }
 
+
+#endif /* HAVE_CURVE25519 */
 #endif /* !__aarch64__ */
-#endif /* WOLFSSL_ARMASM && HAVE_CURVE25519 */
+#endif /* WOLFSSL_ARMASM */

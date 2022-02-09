@@ -29,7 +29,6 @@ nobase_include_HEADERS+= \
                          wolfssl/wolfcrypt/error-crypt.h \
                          wolfssl/wolfcrypt/fips_test.h \
                          wolfssl/wolfcrypt/hash.h \
-                         wolfssl/wolfcrypt/hc128.h \
                          wolfssl/wolfcrypt/hmac.h \
                          wolfssl/wolfcrypt/kdf.h \
                          wolfssl/wolfcrypt/integer.h \
@@ -41,7 +40,6 @@ nobase_include_HEADERS+= \
                          wolfssl/wolfcrypt/wc_encrypt.h \
                          wolfssl/wolfcrypt/wc_port.h \
                          wolfssl/wolfcrypt/pwdbased.h \
-                         wolfssl/wolfcrypt/rabbit.h \
                          wolfssl/wolfcrypt/chacha.h \
                          wolfssl/wolfcrypt/chacha20_poly1305.h \
                          wolfssl/wolfcrypt/random.h \
@@ -58,7 +56,6 @@ nobase_include_HEADERS+= \
                          wolfssl/wolfcrypt/blake2-impl.h \
                          wolfssl/wolfcrypt/tfm.h \
                          wolfssl/wolfcrypt/srp.h \
-                         wolfssl/wolfcrypt/idea.h \
                          wolfssl/wolfcrypt/types.h \
                          wolfssl/wolfcrypt/visibility.h \
                          wolfssl/wolfcrypt/logging.h \
@@ -70,6 +67,7 @@ nobase_include_HEADERS+= \
                          wolfssl/wolfcrypt/pkcs12.h \
                          wolfssl/wolfcrypt/wolfmath.h \
                          wolfssl/wolfcrypt/sha3.h \
+                         wolfssl/wolfcrypt/siphash.h \
                          wolfssl/wolfcrypt/cpuid.h \
                          wolfssl/wolfcrypt/cryptocb.h
 
@@ -172,4 +170,8 @@ endif
 
 if BUILD_IOTSAFE
 nobase_include_HEADERS+= wolfssl/wolfcrypt/port/iotsafe/iotsafe.h
+endif
+
+if BUILD_PSA
+nobase_include_HEADERS+= wolfssl/wolfcrypt/port/psa/psa.h
 endif

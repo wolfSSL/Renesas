@@ -74,7 +74,7 @@ mkdir -p $RPM_BUILD_ROOT/
 %{_libdir}/libwolfssl.la
 %{_libdir}/libwolfssl.so
 %{_libdir}/libwolfssl.so.30
-%{_libdir}/libwolfssl.so.30.1.1
+%{_libdir}/libwolfssl.so.30.1.2
 
 %files devel
 %defattr(-,root,root,-)
@@ -100,7 +100,6 @@ mkdir -p $RPM_BUILD_ROOT/
 %{_includedir}/cyassl/ctaocrypt/ecc.h
 %{_includedir}/cyassl/ctaocrypt/error-crypt.h
 %{_includedir}/cyassl/ctaocrypt/fips_test.h
-%{_includedir}/cyassl/ctaocrypt/hc128.h
 %{_includedir}/cyassl/ctaocrypt/hmac.h
 %{_includedir}/cyassl/ctaocrypt/integer.h
 %{_includedir}/cyassl/ctaocrypt/logging.h
@@ -114,7 +113,6 @@ mkdir -p $RPM_BUILD_ROOT/
 %{_includedir}/cyassl/ctaocrypt/pkcs7.h
 %{_includedir}/cyassl/ctaocrypt/poly1305.h
 %{_includedir}/cyassl/ctaocrypt/pwdbased.h
-%{_includedir}/cyassl/ctaocrypt/rabbit.h
 %{_includedir}/cyassl/ctaocrypt/random.h
 %{_includedir}/cyassl/ctaocrypt/ripemd.h
 %{_includedir}/cyassl/ctaocrypt/rsa.h
@@ -271,9 +269,7 @@ mkdir -p $RPM_BUILD_ROOT/
 %{_includedir}/wolfssl/wolfcrypt/ge_448.h
 %{_includedir}/wolfssl/wolfcrypt/ge_operations.h
 %{_includedir}/wolfssl/wolfcrypt/hash.h
-%{_includedir}/wolfssl/wolfcrypt/hc128.h
 %{_includedir}/wolfssl/wolfcrypt/hmac.h
-%{_includedir}/wolfssl/wolfcrypt/idea.h
 %{_includedir}/wolfssl/wolfcrypt/integer.h
 %{_includedir}/wolfssl/wolfcrypt/kdf.h
 %{_includedir}/wolfssl/wolfcrypt/logging.h
@@ -289,7 +285,6 @@ mkdir -p $RPM_BUILD_ROOT/
 %{_includedir}/wolfssl/wolfcrypt/pkcs7.h
 %{_includedir}/wolfssl/wolfcrypt/poly1305.h
 %{_includedir}/wolfssl/wolfcrypt/pwdbased.h
-%{_includedir}/wolfssl/wolfcrypt/rabbit.h
 %{_includedir}/wolfssl/wolfcrypt/random.h
 %{_includedir}/wolfssl/wolfcrypt/ripemd.h
 %{_includedir}/wolfssl/wolfcrypt/rc2.h

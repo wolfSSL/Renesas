@@ -339,7 +339,7 @@
 #else
     typedef int SOCKET_T;
     #ifndef SOCKET_INVALID
-        #define SOCKET_INVALID -1
+        #define SOCKET_INVALID (-1)
     #endif
 #endif
 
@@ -426,13 +426,14 @@ WOLFSSL_API int BioReceive(WOLFSSL* ssl, char* buf, int sz, void* ctx);
     WOLFSSL_API int EmbedSend(WOLFSSL* ssl, char* buf, int sz, void* ctx);
 
     #ifdef WOLFSSL_DTLS
-        WOLFSSL_API int EmbedReceiveFrom(WOLFSSL* ssl, char* buf, int sz, void*);
-        WOLFSSL_API int EmbedSendTo(WOLFSSL* ssl, char* buf, int sz, void* ctx);
-        WOLFSSL_API int EmbedGenerateCookie(WOLFSSL* ssl, unsigned char* buf,
-                                           int sz, void*);
+        WOLFSSL_API int EmbedReceiveFrom(WOLFSSL *ssl, char *buf, int sz,
+                                         void *ctx);
+        WOLFSSL_API int EmbedSendTo(WOLFSSL* ssl, char *buf, int sz, void *ctx);
+        WOLFSSL_API int EmbedGenerateCookie(WOLFSSL* ssl, byte *buf, int sz,
+                                            void *ctx);
         #ifdef WOLFSSL_MULTICAST
-            WOLFSSL_API int EmbedReceiveFromMcast(WOLFSSL* ssl,
-                                                  char* buf, int sz, void*);
+            WOLFSSL_API int EmbedReceiveFromMcast(WOLFSSL *ssl, char *buf,
+                                                  int sz, void *ctx);
         #endif /* WOLFSSL_MULTICAST */
     #endif /* WOLFSSL_DTLS */
 #endif /* USE_WOLFSSL_IO */
@@ -444,9 +445,9 @@ WOLFSSL_API int BioReceive(WOLFSSL* ssl, char* buf, int sz, void* ctx);
         unsigned char** respBuf, unsigned char* httpBuf, int httpBufSz,
         void* heap);
 
-    WOLFSSL_API int EmbedOcspLookup(void*, const char*, int, unsigned char*,
-                                   int, unsigned char**);
-    WOLFSSL_API void EmbedOcspRespFree(void*, unsigned char*);
+    WOLFSSL_API int EmbedOcspLookup(void* ctx, const char* url, int urlSz,
+                        byte* ocspReqBuf, int ocspReqSz, byte** ocspRespBuf);
+    WOLFSSL_API void EmbedOcspRespFree(void* ctx, byte *resp);
 #endif
 
 #ifdef HAVE_CRL_IO
@@ -479,10 +480,10 @@ WOLFSSL_API int BioReceive(WOLFSSL* ssl, char* buf, int sz, void* ctx);
 /* I/O callbacks */
 typedef int (*CallbackIORecv)(WOLFSSL *ssl, char *buf, int sz, void *ctx);
 typedef int (*CallbackIOSend)(WOLFSSL *ssl, char *buf, int sz, void *ctx);
-WOLFSSL_API void wolfSSL_CTX_SetIORecv(WOLFSSL_CTX*, CallbackIORecv);
-WOLFSSL_API void wolfSSL_CTX_SetIOSend(WOLFSSL_CTX*, CallbackIOSend);
-WOLFSSL_API void wolfSSL_SSLSetIORecv(WOLFSSL*, CallbackIORecv);
-WOLFSSL_API void wolfSSL_SSLSetIOSend(WOLFSSL*, CallbackIOSend);
+WOLFSSL_API void wolfSSL_CTX_SetIORecv(WOLFSSL_CTX *ctx, CallbackIORecv CBIORecv);
+WOLFSSL_API void wolfSSL_CTX_SetIOSend(WOLFSSL_CTX *ctx, CallbackIOSend CBIOSend);
+WOLFSSL_API void wolfSSL_SSLSetIORecv(WOLFSSL *ssl, CallbackIORecv CBIORecv);
+WOLFSSL_API void wolfSSL_SSLSetIOSend(WOLFSSL *ssl, CallbackIOSend CBIOSend);
 /* deprecated old name */
 #define wolfSSL_SetIORecv wolfSSL_CTX_SetIORecv
 #define wolfSSL_SetIOSend wolfSSL_CTX_SetIOSend
@@ -605,11 +606,87 @@ WOLFSSL_API void wolfSSL_SetIOWriteFlags(WOLFSSL* ssl, int flags);
     WOLFSSL_API   int wolfSSL_SetIO_LwIP(WOLFSSL* ssl, void *pcb,
                                 tcp_recv_fn recv, tcp_sent_fn sent, void *arg);
 #endif
+#ifdef WOLFSSL_ISOTP
+    #define ISOTP_DEFAULT_TIMEOUT 100
+    #define ISOTP_DEFAULT_WAIT_COUNT 3
+    #define ISOTP_FIRST_FRAME_DATA_SIZE 6
+    #define ISOTP_SINGLE_FRAME_DATA_SIZE 7
+    #define ISOTP_MAX_CONSECUTIVE_FRAME_DATA_SIZE 7
+    #define ISOTP_MAX_MS_FRAME_DELAY 0x7f
+    #define ISOTP_CAN_BUS_PAYLOAD_SIZE 8
+    #define ISOTP_MAX_DATA_SIZE 4095
+    /* Packets will never be larger than the ISO-TP max data size */
+    #define ISOTP_DEFAULT_BUFFER_SIZE ISOTP_MAX_DATA_SIZE
+    #define ISOTP_FLOW_CONTROL_PACKET_SIZE 3
+    #define ISOTP_FLOW_CONTROL_FRAMES 0 /* infinite */
+    #define ISOTP_MAX_SEQUENCE_COUNTER 15
 
+    enum isotp_frame_type {
+        ISOTP_FRAME_TYPE_SINGLE      = 0,
+        ISOTP_FRAME_TYPE_FIRST       = 1,
+        ISOTP_FRAME_TYPE_CONSECUTIVE = 2,
+        ISOTP_FRAME_TYPE_CONTROL     = 3
+    };
+
+    enum isotp_flow_control {
+        ISOTP_FLOW_CONTROL_CTS   = 0,
+        ISOTP_FLOW_CONTROL_WAIT  = 1,
+        ISOTP_FLOW_CONTROL_ABORT = 2
+    };
+
+    enum isotp_connection_state {
+        ISOTP_CONN_STATE_IDLE,
+        ISOTP_CONN_STATE_SENDING,
+        ISOTP_CONN_STATE_RECEIVING
+    };
+
+    typedef struct isotp_can_data {
+        byte data[ISOTP_CAN_BUS_PAYLOAD_SIZE];
+        byte length;
+    } isotp_can_data;
+
+    /* User supplied functions for sending/receiving CAN bus messages of up to
+     * 8 bytes, as well as a function to add an artificial delay when a
+     * receiver requests one. */
+    typedef int (*can_recv_fn)(struct isotp_can_data *data, void *arg,
+            int timeout);
+    typedef int (*can_send_fn)(struct isotp_can_data *data, void *arg);
+    typedef void (*can_delay_fn)(int microseconds);
+
+    typedef struct isotp_wolfssl_ctx {
+        struct isotp_can_data frame;
+        char *buf_ptr;
+        char *receive_buffer;
+        char *receive_buffer_ptr;
+        can_recv_fn recv_fn;
+        can_send_fn send_fn;
+        can_delay_fn delay_fn;
+        void *arg;
+        int receive_buffer_len;
+        int receive_buffer_size;
+        enum isotp_connection_state state;
+        word16 buf_length;
+        byte sequence;
+        byte flow_packets;
+        byte flow_counter;
+        byte frame_delay;
+        byte wait_counter;
+        byte receive_delay;
+    } isotp_wolfssl_ctx;
+
+    WOLFSSL_LOCAL int ISOTP_Receive(WOLFSSL* ssl, char* buf, int sz, void* ctx);
+    WOLFSSL_LOCAL int ISOTP_Send(WOLFSSL* ssl, char* buf, int sz, void* ctx);
+    WOLFSSL_API int wolfSSL_SetIO_ISOTP(WOLFSSL *ssl, isotp_wolfssl_ctx *ctx,
+            can_recv_fn recv_fn, can_send_fn send_fn, can_delay_fn delay_fn,
+            word32 receive_delay, char *receive_buffer,
+            int receive_buffer_size, void *arg);
+
+#endif
 #ifdef WOLFSSL_DTLS
     typedef int (*CallbackGenCookie)(WOLFSSL* ssl, unsigned char* buf, int sz,
                                      void* ctx);
-    WOLFSSL_API void  wolfSSL_CTX_SetGenCookie(WOLFSSL_CTX*, CallbackGenCookie);
+    WOLFSSL_API void  wolfSSL_CTX_SetGenCookie(WOLFSSL_CTX* ctx,
+                                               CallbackGenCookie cb);
     WOLFSSL_API void  wolfSSL_SetCookieCtx(WOLFSSL* ssl, void *ctx);
     WOLFSSL_API void* wolfSSL_GetCookieCtx(WOLFSSL* ssl);
 
@@ -641,7 +718,7 @@ WOLFSSL_API void wolfSSL_SetIOWriteFlags(WOLFSSL* ssl, int flags);
     #define XINET_PTON(a,b,c)   inet_pton((a),(b),(c))
     #ifdef USE_WINDOWS_API /* Windows-friendly definition */
         #undef  XINET_PTON
-        #define XINET_PTON(a,b,c)   InetPton((a),(b),(c))
+        #define XINET_PTON(a,b,c)   InetPton((a),(PCWSTR)(b),(c))
     #endif
 #endif
 

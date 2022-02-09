@@ -9,8 +9,9 @@
  * https://www.wolfssl.com
  */
 #include <wolfssl/wolfcrypt/settings.h>
-#include "wolfcrypt/benchmark/benchmark.h"
 #include "common/util.h"
+
+int benchmark_test(void *args);
 
 void wolfssl_thread_entry(void *pvParameters) {
     FSP_PARAMETER_NOT_USED(pvParameters);

@@ -3132,7 +3132,7 @@ int fp_sqr_comba(fp_int *A, fp_int *B)
   int       pa, ix, iz;
   fp_digit  c0, c1, c2;
 #ifdef TFM_ISO
-  fp_word   tt;
+  fp_word   tt = 0;
 #endif
    fp_int    *dst;
 #ifndef WOLFSSL_SMALL_STACK
@@ -3558,7 +3558,7 @@ int fp_montgomery_reduce_ex(fp_int *a, fp_int *m, fp_digit mp, int ct)
           ++_c;
        }
        LOOP_END;
-       while (cy) {
+       while (cy) { // NOLINT(bugprone-infinite-loop) /* PROPCARRY is an asm macro */
            PROPCARRY;
            ++_c;
        }

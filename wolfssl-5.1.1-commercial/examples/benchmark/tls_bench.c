@@ -12,13 +12,14 @@
 
 /*
 Example gcc build statement
-gcc -lwolfssl -lpthread -o tls_bench tls_bench.c
-./tls_bench
+
+  gcc -lwolfssl -lpthread -o tls_bench tls_bench.c
+  ./tls_bench
 
 Or
 
-#include <examples/benchmark/tls_bench.h>
-bench_tls(args);
+  #include <examples/benchmark/tls_bench.h>
+  bench_tls(args);
 */
 
 
@@ -1553,41 +1554,47 @@ static void* server_thread(void* args)
 #endif /* !NO_WOLFSSL_SERVER */
 
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
 static void print_stats(stats_t* wcStat, const char* desc, const char* cipher, const char *group, int verbose)
 {
-    const char* formatStr;
-
     if (verbose) {
-        formatStr = "wolfSSL %s Benchmark on %s with group %s:\n"
-               "\tTotal       : %9d bytes\n"
-               "\tNum Conns   : %9d\n"
-               "\tRx Total    : %9.3f ms\n"
-               "\tTx Total    : %9.3f ms\n"
-               "\tRx          : %9.3f MB/s\n"
-               "\tTx          : %9.3f MB/s\n"
-               "\tConnect     : %9.3f ms\n"
-               "\tConnect Avg : %9.3f ms\n";
+        fprintf(stderr,
+                "wolfSSL %s Benchmark on %s with group %s:\n"
+                "\tTotal       : %9d bytes\n"
+                "\tNum Conns   : %9d\n"
+                "\tRx Total    : %9.3f ms\n"
+                "\tTx Total    : %9.3f ms\n"
+                "\tRx          : %9.3f MB/s\n"
+                "\tTx          : %9.3f MB/s\n"
+                "\tConnect     : %9.3f ms\n"
+                "\tConnect Avg : %9.3f ms\n",
+                desc,
+                cipher,
+                group,
+                wcStat->txTotal + wcStat->rxTotal,
+                wcStat->connCount,
+                wcStat->rxTime * 1000,
+                wcStat->txTime * 1000,
+                wcStat->rxTotal / wcStat->rxTime / 1024 / 1024,
+                wcStat->txTotal / wcStat->txTime / 1024 / 1024,
+                wcStat->connTime * 1000,
+                wcStat->connTime * 1000 / wcStat->connCount);
     }
     else {
-        formatStr = "%-6s  %-33s  %-25s  %11d  %9d  %9.3f  %9.3f  %9.3f  %9.3f  %17.3f  %15.3f\n";
+        fprintf(stderr,
+                "%-6s  %-33s  %-25s  %11d  %9d  %9.3f  %9.3f  %9.3f  "
+                "%9.3f  %17.3f  %15.3f\n",
+                desc,
+                cipher,
+                group,
+                wcStat->txTotal + wcStat->rxTotal,
+                wcStat->connCount,
+                wcStat->rxTime * 1000,
+                wcStat->txTime * 1000,
+                wcStat->rxTotal / wcStat->rxTime / 1024 / 1024,
+                wcStat->txTotal / wcStat->txTime / 1024 / 1024,
+                wcStat->connTime * 1000,
+                wcStat->connTime * 1000 / wcStat->connCount);
     }
-
-    fprintf(stderr, formatStr,
-            desc,
-            cipher,
-            group,
-            wcStat->txTotal + wcStat->rxTotal,
-            wcStat->connCount,
-            wcStat->rxTime * 1000,
-            wcStat->txTime * 1000,
-            wcStat->rxTotal / wcStat->rxTime / 1024 / 1024,
-            wcStat->txTotal / wcStat->txTime / 1024 / 1024,
-            wcStat->connTime * 1000,
-            wcStat->connTime * 1000 / wcStat->connCount);
 }
 
 static void Usage(void)
@@ -1689,9 +1696,6 @@ static int SetupSupportedGroups(int verbose)
 }
 #endif
 
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
 int bench_tls(void* args)
 {
@@ -1982,6 +1986,10 @@ int bench_tls(void* args)
         #endif
         #endif
                 if (argClientOnly) {
+            #if !defined(NO_WOLFSSL_SERVER) && !defined(NO_WOLFSSL_CLIENT)
+                    /* to avoid to wait server forever */
+                    info->serverListening = 1;
+            #endif
             #ifndef NO_WOLFSSL_CLIENT
                     ret = bench_tls_client(info);
             #endif

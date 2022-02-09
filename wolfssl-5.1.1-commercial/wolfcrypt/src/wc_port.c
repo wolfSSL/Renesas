@@ -102,6 +102,11 @@
     #pragma warning(disable: 4996)
 #endif
 
+#if defined(WOLFSSL_HAVE_PSA)
+    #include <wolfssl/wolfcrypt/port/psa/psa.h>
+#endif
+
+
 /* prevent multiple mutex initializations */
 static volatile int initRefCount = 0;
 
@@ -120,7 +125,7 @@ int wolfCrypt_Init(void)
             time_t seed = time(NULL);
             srand((word32)seed);
             rngMallocFail = rand() % 2000; /* max 2000 */
-            printf("\n--- RNG MALLOC FAIL AT %d---\n", rngMallocFail);
+            printf("\n--- RNG MALLOC FAIL AT %u ---\n", rngMallocFail);
             wolfSSL_SetMemFailCount(rngMallocFail);
         }
     #endif
@@ -258,6 +263,11 @@ int wolfCrypt_Init(void)
             WOLFSSL_MSG("Error creating logging mutex");
             return ret;
         }
+    #endif
+
+    #if defined(WOLFSSL_HAVE_PSA)
+        if ((ret = wc_psa_init()) != 0)
+            return ret;
     #endif
 
 #ifdef HAVE_ECC
@@ -466,24 +476,25 @@ int wc_FileExists(const char* fname)
     if (XSTAT(fname, &ctx.s) != 0) {
          WOLFSSL_MSG("stat on name failed");
          return BAD_PATH_ERROR;
-    } else
+    } else {
 #if defined(USE_WINDOWS_API)
-    if (XS_ISREG(ctx.s.st_mode)) {
-        return 0;
-    }
+        if (XS_ISREG(ctx.s.st_mode)) {
+            return 0;
+        }
 #elif defined(WOLFSSL_ZEPHYR)
-    if (XS_ISREG(ctx.s.type)) {
-        return 0;
-    }
+        if (XS_ISREG(ctx.s.type)) {
+            return 0;
+        }
 #elif defined(WOLFSSL_TELIT_M2MB)
-    if (XS_ISREG(ctx.s.st_mode)) {
-        return 0;
-    }
+        if (XS_ISREG(ctx.s.st_mode)) {
+            return 0;
+        }
 #else
-    if (XS_ISREG(ctx.s.st_mode)) {
-        return 0;
-    }
+        if (XS_ISREG(ctx.s.st_mode)) {
+            return 0;
+        }
 #endif
+    }
     return WC_ISFILEEXIST_NOFILE;
 }
 
@@ -947,6 +958,41 @@ char* wc_strsep(char **stringp, const char *delim)
     return s;
 }
 #endif /* USE_WOLF_STRSEP */
+
+#ifdef USE_WOLF_STRLCPY
+size_t wc_strlcpy(char *dst, const char *src, size_t dstSize)
+{
+    size_t i;
+
+    if (!dstSize)
+        return 0;
+
+    /* Always have to leave a space for NULL */
+    for (i = 0; i < (dstSize - 1) && *src != '\0'; i++) {
+        *dst++ = *src++;
+    }
+    *dst = '\0';
+
+    return i; /* return length without NULL */
+}
+#endif /* USE_WOLF_STRLCPY */
+
+#ifdef USE_WOLF_STRLCAT
+size_t wc_strlcat(char *dst, const char *src, size_t dstSize)
+{
+    size_t dstLen;
+
+    if (!dstSize)
+        return 0;
+
+    dstLen = XSTRLEN(dst);
+
+    if (dstSize < dstLen)
+        return dstLen + XSTRLEN(src);
+
+    return dstLen + wc_strlcpy(dst + dstLen, src, dstSize - dstLen);
+}
+#endif /* USE_WOLF_STRLCAT */
 
 #if WOLFSSL_CRYPT_HW_MUTEX
 /* Mutex for protection of cryptography hardware */
@@ -1639,7 +1685,7 @@ int wolfSSL_CryptHwMutexUnLock(void)
       void *newp = NULL;
       if(p) {
           ercd = get_mpl(ID_wolfssl_MPOOL, sz, (VP)&newp);
-          if (ercd == E_OK) {
+          if ((ercd == E_OK) && (newp != NULL)) {
               XMEMCPY(newp, p, sz);
               ercd = rel_mpl(ID_wolfssl_MPOOL, (VP)p);
               if (ercd == E_OK) {
@@ -1733,7 +1779,7 @@ int wolfSSL_CryptHwMutexUnLock(void)
       void *newp = NULL;
       if (p) {
           ercd = tk_get_mpl(ID_wolfssl_MPOOL, sz, (VP)&newp, TMO_FEVR);
-          if (ercd == E_OK) {
+          if ((ercd == E_OK) && (newp != NULL)) {
               XMEMCPY(newp, p, sz);
               ercd = tk_rel_mpl(ID_wolfssl_MPOOL, (VP)p);
               if (ercd == E_OK) {
@@ -2140,10 +2186,7 @@ time_t windows_time(time_t* timer)
     SYSTEMTIME     sysTime;
     FILETIME       fTime;
     ULARGE_INTEGER intTime;
-    time_t         localTime;
 
-    if (timer == NULL)
-        timer = &localTime;
 
     GetSystemTime(&sysTime);
     SystemTimeToFileTime(&sysTime, &fTime);
@@ -2153,9 +2196,11 @@ time_t windows_time(time_t* timer)
     intTime.QuadPart -= 0x19db1ded53e8000;
     /* to secs */
     intTime.QuadPart /= 10000000;
-    *timer = (time_t)intTime.QuadPart;
 
-    return *timer;
+    if (timer != NULL)
+        *timer = (time_t)intTime.QuadPart;
+
+    return (time_t)intTime.QuadPart;
 }
 #endif /*  _WIN32_WCE */
 
@@ -2265,19 +2310,17 @@ time_t pic32_time(time_t* timer)
 #else
     word32 sec = 0;
 #endif
-    time_t localTime;
-
-    if (timer == NULL)
-        timer = &localTime;
 
 #ifdef MICROCHIP_MPLAB_HARMONY
     sec = TCPIP_SNTP_UTCSecondsGet();
 #else
     sec = SNTPGetUTCSeconds();
 #endif
-    *timer = (time_t) sec;
 
-    return *timer;
+    if (timer != NULL)
+        *timer = (time_t)sec;
+
+    return (time_t)sec;
 }
 
 #endif /* MICROCHIP_TCPIP || MICROCHIP_TCPIP_V5 */
@@ -2321,16 +2364,14 @@ time_t micrium_time(time_t* timer)
 
 time_t mqx_time(time_t* timer)
 {
-    time_t localTime;
     TIME_STRUCT time_s;
 
-    if (timer == NULL)
-        timer = &localTime;
-
     _time_get(&time_s);
-    *timer = (time_t) time_s.SECONDS;
 
-    return *timer;
+    if (timer != NULL)
+        *timer = (time_t)time_s.SECONDS;
+
+    return (time_t)time_s.SECONDS;
 }
 
 #endif /* FREESCALE_MQX || FREESCALE_KSDK_MQX */

@@ -39,16 +39,18 @@ typedef struct WOLFSSL_SHA_CTX {
     #endif
 } WOLFSSL_SHA_CTX;
 
-WOLFSSL_API int wolfSSL_SHA_Init(WOLFSSL_SHA_CTX*);
-WOLFSSL_API int wolfSSL_SHA_Update(WOLFSSL_SHA_CTX*, const void*, unsigned long);
-WOLFSSL_API int wolfSSL_SHA_Final(unsigned char*, WOLFSSL_SHA_CTX*);
-WOLFSSL_API int wolfSSL_SHA_Transform(WOLFSSL_SHA_CTX*,
-                                          const unsigned char *data);
+WOLFSSL_API int wolfSSL_SHA_Init(WOLFSSL_SHA_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA_Update(WOLFSSL_SHA_CTX* sha, const void* input,
+                           unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA_Final(byte* input, WOLFSSL_SHA_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA_Transform(WOLFSSL_SHA_CTX* sha,
+                                         const unsigned char* data);
 /* SHA1 points to above, shouldn't use SHA0 ever */
-WOLFSSL_API int wolfSSL_SHA1_Init(WOLFSSL_SHA_CTX*);
-WOLFSSL_API int wolfSSL_SHA1_Update(WOLFSSL_SHA_CTX*, const void*, unsigned long);
-WOLFSSL_API int wolfSSL_SHA1_Final(unsigned char*, WOLFSSL_SHA_CTX*);
-WOLFSSL_API int wolfSSL_SHA1_Transform(WOLFSSL_SHA_CTX*,
+WOLFSSL_API int wolfSSL_SHA1_Init(WOLFSSL_SHA_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA1_Update(WOLFSSL_SHA_CTX* sha, const void* input,
+                            unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA1_Final(byte* output, WOLFSSL_SHA_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA1_Transform(WOLFSSL_SHA_CTX* sha,
                                           const unsigned char *data);
 enum {
     SHA_DIGEST_LENGTH = 20
@@ -85,10 +87,10 @@ typedef struct WOLFSSL_SHA224_CTX {
     ALIGN16 void* holder[(272 + WC_ASYNC_DEV_SIZE) / sizeof(void*)];
 } WOLFSSL_SHA224_CTX;
 
-WOLFSSL_API int wolfSSL_SHA224_Init(WOLFSSL_SHA224_CTX*);
-WOLFSSL_API int wolfSSL_SHA224_Update(WOLFSSL_SHA224_CTX*, const void*,
-                                         unsigned long);
-WOLFSSL_API int wolfSSL_SHA224_Final(unsigned char*, WOLFSSL_SHA224_CTX*);
+WOLFSSL_API int wolfSSL_SHA224_Init(WOLFSSL_SHA224_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA224_Update(WOLFSSL_SHA224_CTX* sha, const void* input,
+                           unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA224_Final(byte* output, WOLFSSL_SHA224_CTX* sha);
 
 enum {
     SHA224_DIGEST_LENGTH = 28
@@ -119,11 +121,11 @@ typedef struct WOLFSSL_SHA256_CTX {
     ALIGN16 void* holder[(272 + WC_ASYNC_DEV_SIZE) / sizeof(void*)];
 } WOLFSSL_SHA256_CTX;
 
-WOLFSSL_API int wolfSSL_SHA256_Init(WOLFSSL_SHA256_CTX*);
-WOLFSSL_API int wolfSSL_SHA256_Update(WOLFSSL_SHA256_CTX*, const void*,
-                                 unsigned long);
-WOLFSSL_API int wolfSSL_SHA256_Final(unsigned char*, WOLFSSL_SHA256_CTX*);
-WOLFSSL_API int wolfSSL_SHA256_Transform(WOLFSSL_SHA256_CTX*,
+WOLFSSL_API int wolfSSL_SHA256_Init(WOLFSSL_SHA256_CTX* sha256);
+WOLFSSL_API int wolfSSL_SHA256_Update(WOLFSSL_SHA256_CTX* sha, const void* input,
+                              unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA256_Final(byte* output, WOLFSSL_SHA256_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA256_Transform(WOLFSSL_SHA256_CTX* sha256,
                                                 const unsigned char *data);
 enum {
     SHA256_DIGEST_LENGTH = 32
@@ -162,10 +164,10 @@ typedef struct WOLFSSL_SHA384_CTX {
     void* holder[(268 + WC_ASYNC_DEV_SIZE) / sizeof(void*)];
 } WOLFSSL_SHA384_CTX;
 
-WOLFSSL_API int wolfSSL_SHA384_Init(WOLFSSL_SHA384_CTX*);
-WOLFSSL_API int wolfSSL_SHA384_Update(WOLFSSL_SHA384_CTX*, const void*,
-                                         unsigned long);
-WOLFSSL_API int wolfSSL_SHA384_Final(unsigned char*, WOLFSSL_SHA384_CTX*);
+WOLFSSL_API int wolfSSL_SHA384_Init(WOLFSSL_SHA384_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA384_Update(WOLFSSL_SHA384_CTX* sha, const void* input,
+                           unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA384_Final(byte* output, WOLFSSL_SHA384_CTX* sha);
 
 enum {
     SHA384_DIGEST_LENGTH = 48
@@ -191,12 +193,12 @@ typedef struct WOLFSSL_SHA512_CTX {
     void* holder[(288 + WC_ASYNC_DEV_SIZE) / sizeof(void*)];
 } WOLFSSL_SHA512_CTX;
 
-WOLFSSL_API int wolfSSL_SHA512_Init(WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_Update(WOLFSSL_SHA512_CTX*, const void*,
-                                     unsigned long);
-WOLFSSL_API int wolfSSL_SHA512_Final(unsigned char*, WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_Transform(WOLFSSL_SHA512_CTX*,
-                                        const unsigned char*);
+WOLFSSL_API int wolfSSL_SHA512_Init(WOLFSSL_SHA512_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_Update(WOLFSSL_SHA512_CTX* sha,
+                                      const void* input, unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA512_Final(byte* output, WOLFSSL_SHA512_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_Transform(WOLFSSL_SHA512_CTX* sha512,
+                                         const unsigned char* data);
 enum {
     SHA512_DIGEST_LENGTH = 64
 };
@@ -218,12 +220,13 @@ typedef WOLFSSL_SHA512_CTX SHA512_CTX;
 typedef struct WOLFSSL_SHA512_CTX WOLFSSL_SHA512_224_CTX;
 typedef WOLFSSL_SHA512_224_CTX SHA512_224_CTX;
 
-WOLFSSL_API int wolfSSL_SHA512_224_Init(WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_224_Update(WOLFSSL_SHA512_CTX*, const void*,
-                                     unsigned long);
-WOLFSSL_API int wolfSSL_SHA512_224_Final(unsigned char*, WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_224_Transform(WOLFSSL_SHA512_CTX*,
-                                        const unsigned char*);
+WOLFSSL_API int wolfSSL_SHA512_224_Init(WOLFSSL_SHA512_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_224_Update(WOLFSSL_SHA512_224_CTX* sha,
+                                        const void* input, unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA512_224_Final(byte* output,
+                                         WOLFSSL_SHA512_224_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_224_Transform(WOLFSSL_SHA512_CTX* sha512,
+                                          const unsigned char* data);
 
 
 #define SHA512_224_Init   wolfSSL_SHA512_224_Init
@@ -240,12 +243,12 @@ WOLFSSL_API int wolfSSL_SHA512_224_Transform(WOLFSSL_SHA512_CTX*,
 typedef struct WOLFSSL_SHA512_CTX WOLFSSL_SHA512_256_CTX;
 typedef WOLFSSL_SHA512_256_CTX SHA512_256_CTX;
 
-WOLFSSL_API int wolfSSL_SHA512_256_Init(WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_256_Update(WOLFSSL_SHA512_CTX*, const void*,
-                                     unsigned long);
-WOLFSSL_API int wolfSSL_SHA512_256_Final(unsigned char*, WOLFSSL_SHA512_CTX*);
-WOLFSSL_API int wolfSSL_SHA512_256_Transform(WOLFSSL_SHA512_CTX*,
-                                        const unsigned char*);
+WOLFSSL_API int wolfSSL_SHA512_256_Init(WOLFSSL_SHA512_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_256_Update(WOLFSSL_SHA512_256_CTX* sha,
+                                        const void* input, unsigned long sz);
+WOLFSSL_API int wolfSSL_SHA512_256_Final(byte* output, WOLFSSL_SHA512_256_CTX* sha);
+WOLFSSL_API int wolfSSL_SHA512_256_Transform(WOLFSSL_SHA512_CTX* sha512,
+                                          const unsigned char* data);
 
 #define SHA512_256_Init   wolfSSL_SHA512_256_Init
 #define SHA512_256_Update wolfSSL_SHA512_256_Update

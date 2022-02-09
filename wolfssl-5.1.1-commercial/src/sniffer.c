@@ -354,7 +354,7 @@ static const char* const msgTable[] =
 static void GetError(int idx, char* str)
 {
     if (str == NULL ||
-            idx < 0 || idx > (int)(sizeof(msgTable)/sizeof(const char* const)))
+            idx <= 0 || idx > (int)(sizeof(msgTable)/sizeof(const char* const)))
         return;
     XSTRNCPY(str, msgTable[idx - 1], MAX_ERROR_LEN-1);
     str[MAX_ERROR_LEN-1] = '\0';
@@ -1038,7 +1038,7 @@ static void Trace(int idx)
 static void TraceHeader(void)
 {
     if (TraceOn) {
-        time_t ticks = XTIME(NULL);
+        time_t ticks = wc_Time(NULL);
         XFPRINTF(TraceFile, "\n%s", XCTIME(&ticks));
     }
 }
@@ -1439,7 +1439,7 @@ static word32 SessionHash(IpInfo* ipInfo, TcpInfo* tcpInfo)
 static SnifferSession* GetSnifferSession(IpInfo* ipInfo, TcpInfo* tcpInfo)
 {
     SnifferSession* session;
-    time_t          currTime = XTIME(NULL);
+    time_t          currTime = wc_Time(NULL);
     word32          row = SessionHash(ipInfo, tcpInfo);
 
     wc_LockMutex(&SessionMutex);
@@ -3074,7 +3074,8 @@ static int ProcessSessionTicket(const byte* input, int* sslBytes,
 
         /* Use the wolf Session cache to retain resumption secret */
         if (session->flags.cached == 0) {
-            WOLFSSL_SESSION* sess = GetSession(session->sslServer, NULL, 0);
+            WOLFSSL_SESSION* sess = wolfSSL_GetSession(session->sslServer,
+                NULL, 0);
             if (sess == NULL) {
                 AddSession(session->sslServer); /* don't re add */
             #ifdef WOLFSSL_SNIFFER_STATS
@@ -3111,8 +3112,8 @@ static int DoResume(SnifferSession* session, char* error)
 
 #ifdef WOLFSSL_TLS13
     if (IsAtLeastTLSv1_3(session->sslServer->version)) {
-        resume = GetSession(session->sslServer,
-                            session->sslServer->session.masterSecret, 0);
+        resume = wolfSSL_GetSession(session->sslServer,
+                                    session->sslServer->session.masterSecret, 0);
         if (resume == NULL) {
             /* TLS v1.3 with hello_retry uses session_id even for new session,
                 so ignore error here */
@@ -3122,8 +3123,8 @@ static int DoResume(SnifferSession* session, char* error)
     else
 #endif
     {
-        resume = GetSession(session->sslServer,
-                            session->sslServer->arrays->masterSecret, 0);
+        resume = wolfSSL_GetSession(session->sslServer,
+                                    session->sslServer->arrays->masterSecret, 0);
         if (resume == NULL) {
         #ifdef WOLFSSL_SNIFFER_STATS
             INC_STAT(SnifferStats.sslResumeMisses);
@@ -3957,7 +3958,7 @@ static int ProcessFinished(const byte* input, int size, int* sslBytes,
     if (ret == 0 && session->flags.cached == 0) {
         if (session->sslServer->options.haveSessionId) {
         #ifndef NO_SESSION_CACHE
-            WOLFSSL_SESSION* sess = GetSession(session->sslServer, NULL, 0);
+            WOLFSSL_SESSION* sess = wolfSSL_GetSession(session->sslServer, NULL, 0);
             if (sess == NULL) {
                 AddSession(session->sslServer); /* don't re add */
             #ifdef WOLFSSL_SNIFFER_STATS
@@ -4280,27 +4281,9 @@ static int Decrypt(WOLFSSL* ssl, byte* output, const byte* input, word32 sz)
             break;
         #endif
 
-        #ifdef HAVE_HC128
-        case wolfssl_hc128:
-            wc_Hc128_Process(ssl->decrypt.hc128, output, input, sz);
-            break;
-        #endif
-
-        #ifdef BUILD_RABBIT
-        case wolfssl_rabbit:
-            wc_RabbitProcess(ssl->decrypt.rabbit, output, input, sz);
-            break;
-        #endif
-
         #ifdef HAVE_CAMELLIA
         case wolfssl_camellia:
             wc_CamelliaCbcDecrypt(ssl->decrypt.cam, output, input, sz);
-            break;
-        #endif
-
-        #ifdef HAVE_IDEA
-        case wolfssl_idea:
-            wc_IdeaCbcDecrypt(ssl->decrypt.idea, output, input, sz);
             break;
         #endif
 
@@ -4476,7 +4459,7 @@ static void RemoveStaleSessions(void)
         session = SessionTable[i];
         while (session) {
             SnifferSession* next = session->next;
-            if (XTIME(NULL) >= session->lastUsed + WOLFSSL_SNIFFER_TIMEOUT) {
+            if (wc_Time(NULL) >= session->lastUsed + WOLFSSL_SNIFFER_TIMEOUT) {
                 TraceStaleSession();
                 RemoveSession(session, NULL, NULL, i);
             }
@@ -4525,7 +4508,7 @@ static SnifferSession* CreateSession(IpInfo* ipInfo, TcpInfo* tcpInfo,
     session->cliPort = (word16)tcpInfo->srcPort;
     session->cliSeqStart = tcpInfo->sequence;
     session->cliExpected = 1;  /* relative */
-    session->lastUsed= XTIME(NULL);
+    session->lastUsed= wc_Time(NULL);
     session->keySz = 0;
 #ifdef HAVE_SNI
     session->sni = NULL;
