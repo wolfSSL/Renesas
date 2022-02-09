@@ -16,9 +16,7 @@ This repository currently contains the following wolfSSL product versions.
 
 |Product|Version|Notes|
 |:--|:--|:--|
-|wolfSSL|Post 5.1.1 dev|Development version matching wolfSSL repo commit
-cba262440a388ef1420f30ba99d6f0efe3a419f7. Includes RA6M3 FSP 3.5.0 and
-RX72N FreeRTOS example project.|
+|wolfSSL|Post 5.1.1 dev|Development version matching wolfSSL repo commit cba262440a388ef1420f30ba99d6f0efe3a419f7. Includes RA6M3 FSP 3.5.0 and RX72N FreeRTOS example project.|
 
 ## wolfSSL Renesas Support
 
