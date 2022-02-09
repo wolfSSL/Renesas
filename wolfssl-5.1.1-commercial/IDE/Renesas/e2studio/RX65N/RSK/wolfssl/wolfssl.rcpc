@@ -52,9 +52,7 @@
           <Path>..\..\..\..\..\..\wolfcrypt\src\ge_low_mem.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\ge_operations.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\hash.c</Path>
-          <Path>..\..\..\..\..\..\wolfcrypt\src\hc128.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\hmac.c</Path>
-          <Path>..\..\..\..\..\..\wolfcrypt\src\idea.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\integer.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\kdf.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\logging.c</Path>
@@ -66,7 +64,6 @@
           <Path>..\..\..\..\..\..\wolfcrypt\src\pkcs7.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\poly1305.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\pwdbased.c</Path>
-          <Path>..\..\..\..\..\..\wolfcrypt\src\rabbit.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\random.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\ripemd.c</Path>
           <Path>..\..\..\..\..\..\wolfcrypt\src\rsa.c</Path>
@@ -174,9 +171,7 @@
           <Path>Debug\ge_low_mem.obj</Path>
           <Path>Debug\ge_operations.obj</Path>
           <Path>Debug\hash.obj</Path>
-          <Path>Debug\hc128.obj</Path>
           <Path>Debug\hmac.obj</Path>
-          <Path>Debug\idea.obj</Path>
           <Path>Debug\integer.obj</Path>
           <Path>Debug\kdf.obj</Path>
           <Path>Debug\logging.obj</Path>
@@ -188,7 +183,6 @@
           <Path>Debug\pkcs7.obj</Path>
           <Path>Debug\poly1305.obj</Path>
           <Path>Debug\pwdbased.obj</Path>
-          <Path>Debug\rabbit.obj</Path>
           <Path>Debug\random.obj</Path>
           <Path>Debug\ripemd.obj</Path>
           <Path>Debug\rsa.obj</Path>

@@ -229,7 +229,7 @@
     #include "wolfSSL.I-CUBE-wolfSSL_conf.h"
 #endif
 
-#define WOLFSSL_MAKE_FIPS_VERSION(major, minor) ((major * 256) + minor)
+#define WOLFSSL_MAKE_FIPS_VERSION(major, minor) (((major) * 256) + (minor))
 #if !defined(HAVE_FIPS)
     #define WOLFSSL_FIPS_VERSION_CODE WOLFSSL_MAKE_FIPS_VERSION(0,0)
 #elif !defined(HAVE_FIPS_VERSION)
@@ -455,7 +455,6 @@
     /* Allows use of DH with fixed points if uncommented and NO_DH is removed */
     /* WOLFSSL_DH_CONST */
     #define NO_DSA
-    #define NO_HC128
     #define HAVE_ECC
     #define NO_SESSION_CACHE
     #define WOLFSSL_CMSIS_RTOS
@@ -792,9 +791,6 @@ extern void uITRON4_free(void *p) ;
     #ifndef NO_DSA
         #define NO_DSA
     #endif
-    #ifndef NO_HC128
-        #define NO_HC128
-    #endif
 
     #ifndef SINGLE_THREADED
         #include "semphr.h"
@@ -924,10 +920,8 @@ extern void uITRON4_free(void *p) ;
     /* Allows use of DH with fixed points if uncommented and NO_DH is removed */
     /* WOLFSSL_DH_CONST */
     #define NO_DSA
-    #define NO_HC128
     #define NO_DEV_RANDOM
     #define NO_WOLFSSL_DIR
-    #define NO_RABBIT
     #ifndef NO_FILESYSTEM
         #define LSR_FS
         #include "inc/hw_types.h"
@@ -1097,8 +1091,6 @@ extern void uITRON4_free(void *p) ;
     #define NO_WRITEV
     #undef  NO_DEV_RANDOM
     #define NO_DEV_RANDOM
-    #undef  NO_RABBIT
-    #define NO_RABBIT
     #undef  NO_WOLFSSL_DIR
     #define NO_WOLFSSL_DIR
     #undef  NO_RC4
@@ -1285,7 +1277,7 @@ extern void uITRON4_free(void *p) ;
     defined(WOLFSSL_STM32F7) || defined(WOLFSSL_STM32F1) || \
     defined(WOLFSSL_STM32L4) || defined(WOLFSSL_STM32L5) || \
     defined(WOLFSSL_STM32WB) || defined(WOLFSSL_STM32H7) || \
-    defined(WOLFSSL_STM32G0)
+    defined(WOLFSSL_STM32G0) || defined(WOLFSSL_STM32U5)
 
     #define SIZEOF_LONG_LONG 8
     #ifndef CHAR_BIT
@@ -1293,8 +1285,6 @@ extern void uITRON4_free(void *p) ;
     #endif
     #define NO_DEV_RANDOM
     #define NO_WOLFSSL_DIR
-    #undef  NO_RABBIT
-    #define NO_RABBIT
     #ifndef NO_STM32_RNG
         #undef  STM32_RNG
         #define STM32_RNG
@@ -1340,6 +1330,8 @@ extern void uITRON4_free(void *p) ;
             #include "stm32wbxx_hal.h"
         #elif defined(WOLFSSL_STM32G0)
             #include "stm32g0xx_hal.h"
+        #elif defined(WOLFSSL_STM32U5)
+            #include "stm32u5xx_hal.h"
         #endif
         #if defined(WOLFSSL_CUBEMX_USE_LL) && defined(WOLFSSL_STM32L4)
             #include "stm32l4xx_ll_rng.h"
@@ -1391,7 +1383,7 @@ extern void uITRON4_free(void *p) ;
     #endif /* WOLFSSL_STM32_CUBEMX */
 #endif /* WOLFSSL_STM32F2 || WOLFSSL_STM32F4 || WOLFSSL_STM32L4 ||
           WOLFSSL_STM32L5 || WOLFSSL_STM32F7 || WOLFSSL_STMWB ||
-          WOLFSSL_STM32H7 || WOLFSSL_STM32G0 */
+          WOLFSSL_STM32H7 || WOLFSSL_STM32G0 || WOLFSSL_STM32U5 */
 #ifdef WOLFSSL_DEOS
     #include <deos.h>
     #include <timeout.h>
@@ -2018,8 +2010,7 @@ extern void uITRON4_free(void *p) ;
 
 #if (defined(WOLFSSL_TLS13) && defined(WOLFSSL_NO_TLS12)) || \
     (!defined(HAVE_AES_CBC) && defined(NO_DES3) && defined(NO_RC4) && \
-     !defined(HAVE_CAMELLIA) && !defined(HAVE_IDEA) && \
-     !defined(HAVE_NULL_CIPHER) && !defined(HAVE_HC128))
+     !defined(HAVE_CAMELLIA) & !defined(HAVE_NULL_CIPHER))
     #define WOLFSSL_AEAD_ONLY
 #endif
 
@@ -2424,13 +2415,14 @@ extern void uITRON4_free(void *p) ;
     #define WOLFSSL_NO_WORD64_OPS
 #endif
 
-#if !defined(WOLFCRYPT_ONLY) && !defined(WOLFSSL_NO_TLS12)
+#if !defined(WOLFCRYPT_ONLY) && \
+    (!defined(WOLFSSL_NO_TLS12) || defined(HAVE_KEYING_MATERIAL))
     #undef  WOLFSSL_HAVE_PRF
     #define WOLFSSL_HAVE_PRF
 #endif
 
 #if defined(NO_AES) && defined(NO_DES3) && !defined(HAVE_CAMELLIA) && \
-       !defined(WOLFSSL_HAVE_PRF) && defined(NO_PWDBASED) && !defined(HAVE_IDEA)
+       !defined(WOLFSSL_HAVE_PRF) && defined(NO_PWDBASED)
     #undef  WOLFSSL_NO_XOR_OPS
     #define WOLFSSL_NO_XOR_OPS
 #endif
@@ -2567,6 +2559,14 @@ extern void uITRON4_free(void *p) ;
      */
 #endif
 
+/* if secure renegotiation is enabled, make sure server info is enabled */
+#if !defined(HAVE_RENEGOTIATION_INDICATION) &&                               \
+  !defined(HAVE_SERVER_RENEGOTIATION_INFO) &&   \
+  defined(HAVE_SECURE_RENEGOTIATION) &&         \
+  !defined(NO_WOLFSSL_SERVER)
+    #define HAVE_SERVER_RENEGOTIATION_INFO
+#endif
+
 /* Crypto callbacks should enable hash flag support */
 #if defined(WOLF_CRYPTO_CB) && !defined(WOLFSSL_HASH_FLAGS)
     /* FIPS v1 and v2 do not support hash flags, so do not allow it with
@@ -2586,6 +2586,14 @@ extern void uITRON4_free(void *p) ;
 #if defined(HAVE_PQC) && !defined(HAVE_LIBOQS)
 #error "You must have a post-quantum cryptography implementation to use PQC."
 #endif
+
+
+/* SRTP requires DTLS */
+#if defined(WOLFSSL_SRTP) && !defined(WOLFSSL_DTLS)
+    #error The SRTP extension requires DTLS
+#endif
+
+
 
 /* ---------------------------------------------------------------------------
  * Depricated Algorithm Handling

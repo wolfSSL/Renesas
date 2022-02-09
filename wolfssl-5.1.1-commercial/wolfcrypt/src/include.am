@@ -62,10 +62,6 @@ EXTRA_DIST += wolfcrypt/src/port/ti/ti-aes.c \
               wolfcrypt/src/port/arm/armv8-aes.c \
               wolfcrypt/src/port/arm/armv8-sha256.c \
               wolfcrypt/src/port/arm/armv8-chacha.c \
-              wolfcrypt/src/port/arm/armv8-curve25519.c \
-              wolfcrypt/src/port/arm/armv8-32-curve25519.c \
-              wolfcrypt/src/port/arm/armv8-sha512-asm.c \
-              wolfcrypt/src/port/arm/armv8-32-sha512-asm.c \
               wolfcrypt/src/port/nxp/ksdk_port.c \
               wolfcrypt/src/port/nxp/dcp_port.c \
               wolfcrypt/src/port/nxp/se050_port.c \
@@ -184,3 +180,11 @@ endif
 if BUILD_SE050
 src_libwolfssl_la_SOURCES += wolfcrypt/src/port/nxp/se050_port.c
 endif
+
+if BUILD_PSA
+src_libwolfssl_la_SOURCES += wolfcrypt/src/port/psa/psa.c
+src_libwolfssl_la_SOURCES += wolfcrypt/src/port/psa/psa_hash.c
+src_libwolfssl_la_SOURCES += wolfcrypt/src/port/psa/psa_aes.c
+src_libwolfssl_la_SOURCES += wolfcrypt/src/port/psa/psa_pkcbs.c
+endif
+EXTRA_DIST += wolfcrypt/src/port/psa/README.md

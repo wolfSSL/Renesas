@@ -16,7 +16,9 @@ This repository currently contains the following wolfSSL product versions.
 
 |Product|Version|Notes|
 |:--|:--|:--|
-|wolfSSL|5.1.1 stable|Official wolfSSL 5.1.1 release|
+|wolfSSL|Post 5.1.1 dev|Development version matching wolfSSL repo commit
+cba262440a388ef1420f30ba99d6f0efe3a419f7. Includes RA6M3 FSP 3.5.0 and
+RX72N FreeRTOS example project.|
 
 ## wolfSSL Renesas Support
 
@@ -31,7 +33,7 @@ in the subdirectory linked below.
 |MCU|Software / Driver|
 |:--|:--|
 |Synergy S7G2|SSP 1.7.0|
-|RA6M3|FSP 0.8.0|
+|RA6M3|FSP 3.5.0|
 |RA6M4|FSP 3.5.0|
 |RX65N|TSIP 1.14|
 |RX72N|TSIP 1.14|
@@ -55,7 +57,7 @@ directory.
 
 |Product|Description|
 |:--|:--|
-|[wolfSH](https://www.wolfssl.com/products/wolfssh/)|Lightweight SSHv2 library
+|[wolfSSH](https://www.wolfssl.com/products/wolfssh/)|Lightweight SSHv2 library
 |[wolfMQTT](https://www.wolfssl.com/products/wolfmqtt/)|Lightweight MQTT client
 |[wolfBoot](https://www.wolfssl.com/products/wolfboot/)|Portable secure bootloader
 |[wolfSentry](https://www.wolfssl.com/products/wolfsentry/)|Embedded IDPS

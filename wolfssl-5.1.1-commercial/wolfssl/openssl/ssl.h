@@ -278,8 +278,8 @@ typedef STACK_OF(ACCESS_DESCRIPTION) AUTHORITY_INFO_ACCESS;
 #define SSL_connect                     wolfSSL_connect
 #define SSL_clear                       wolfSSL_clear
 #define SSL_state                       wolfSSL_state
-#define SSL_read_early_data(ssl, d, dLen, len)   wolfSSL_read_early_data(ssl, d, (int)dLen, (int *)len)
-#define SSL_write_early_data(ssl, d, dLen, len)  wolfSSL_write_early_data(ssl, d, (int)dLen, (int *)len)
+#define SSL_read_early_data(ssl, d, dLen, len)   wolfSSL_read_early_data(ssl, d, (int)(dLen), (int *)(len))
+#define SSL_write_early_data(ssl, d, dLen, len)  wolfSSL_write_early_data(ssl, d, (int)(dLen), (int *)(len))
 
 #define SSL_write                       wolfSSL_write
 #define SSL_read                        wolfSSL_read
@@ -321,7 +321,6 @@ typedef STACK_OF(ACCESS_DESCRIPTION) AUTHORITY_INFO_ACCESS;
 /* wolfSSL does not support security levels */
 #define SSL_CTX_set_security_level      wolfSSL_CTX_set_security_level
 #define SSL_CTX_get_security_level      wolfSSL_CTX_get_security_level
-/* wolfSSL does not support exporting keying material */
 #define SSL_export_keying_material      wolfSSL_export_keying_material
 
 #define SSL_CTX_set1_sigalgs_list       wolfSSL_CTX_set1_sigalgs_list
@@ -597,10 +596,16 @@ typedef STACK_OF(ACCESS_DESCRIPTION) AUTHORITY_INFO_ACCESS;
 typedef WOLFSSL_X509_NAME_ENTRY X509_NAME_ENTRY;
 
 #define X509_NAME_entry_count           wolfSSL_X509_NAME_entry_count
-#define X509_NAME_ENTRY_get_object      wolfSSL_X509_NAME_ENTRY_get_object
 #define X509_NAME_get_entry             wolfSSL_X509_NAME_get_entry
+#define X509_NAME_ENTRY_get_object      wolfSSL_X509_NAME_ENTRY_get_object
 #define X509_NAME_ENTRY_get_data        wolfSSL_X509_NAME_ENTRY_get_data
 #define X509_NAME_ENTRY_get_object      wolfSSL_X509_NAME_ENTRY_get_object
+
+#define sk_X509_NAME_ENTRY_new          wolfSSL_sk_X509_NAME_ENTRY_new
+#define sk_X509_NAME_ENTRY_push         wolfSSL_sk_X509_NAME_ENTRY_push
+#define sk_X509_NAME_ENTRY_num          wolfSSL_sk_X509_NAME_ENTRY_num
+#define sk_X509_NAME_ENTRY_value        wolfSSL_sk_X509_NAME_ENTRY_value
+#define sk_X509_NAME_ENTRY_free         wolfSSL_sk_X509_NAME_ENTRY_free
 
 #define X509_V_FLAG_CRL_CHECK     WOLFSSL_CRL_CHECK
 #define X509_V_FLAG_CRL_CHECK_ALL WOLFSSL_CRL_CHECKALL
@@ -817,6 +822,8 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
 #define ASN1_INTEGER_get                wolfSSL_ASN1_INTEGER_get
 #define ASN1_INTEGER_set                wolfSSL_ASN1_INTEGER_set
 #define ASN1_INTEGER_to_BN              wolfSSL_ASN1_INTEGER_to_BN
+#define d2i_ASN1_INTEGER                wolfSSL_d2i_ASN1_INTEGER
+#define i2d_ASN1_INTEGER                wolfSSL_i2d_ASN1_INTEGER
 
 #define i2a_ASN1_OBJECT                 wolfSSL_i2a_ASN1_OBJECT
 #define i2d_ASN1_OBJECT                 wolfSSL_i2d_ASN1_OBJECT
@@ -869,7 +876,7 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
 #define SSL_CTX_set_default_passwd_cb   wolfSSL_CTX_set_default_passwd_cb
 
 #define SSL_CTX_set_timeout(ctx, to)    \
-                                 wolfSSL_CTX_set_timeout(ctx, (unsigned int) to)
+                                 wolfSSL_CTX_set_timeout(ctx, (unsigned int)(to))
 #define SSL_CTX_set_info_callback       wolfSSL_CTX_set_info_callback
 #define SSL_CTX_set_alpn_protos         wolfSSL_CTX_set_alpn_protos
 
@@ -1070,8 +1077,17 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
 #define DTLSv1_handle_timeout               wolfSSL_DTLSv1_handle_timeout
 #define DTLSv1_set_initial_timeout_duration wolfSSL_DTLSv1_set_initial_timeout_duration
 
+/* DTLS SRTP */
+#ifdef WOLFSSL_SRTP
+typedef WOLFSSL_SRTP_PROTECTION_PROFILE      SRTP_PROTECTION_PROFILE;
+#endif
+#define SSL_CTX_set_tlsext_use_srtp          wolfSSL_CTX_set_tlsext_use_srtp
+#define SSL_set_tlsext_use_srtp              wolfSSL_set_tlsext_use_srtp
+#define SSL_get_selected_srtp_profile        wolfSSL_get_selected_srtp_profile
+#define SSL_get_srtp_profiles                wolfSSL_get_srtp_profiles
+
 #ifndef NO_WOLFSSL_STUB
-#define SSL_CTX_set_current_time_cb(ssl, cb) ({ (void)ssl; (void)cb; })
+#define SSL_CTX_set_current_time_cb(ssl, cb) ({ (void)(ssl); (void)(cb); })
 #endif
 
 #define SSL_CTX_use_certificate         wolfSSL_CTX_use_certificate
@@ -1408,7 +1424,7 @@ wolfSSL_X509_STORE_set_verify_cb((WOLFSSL_X509_STORE *)(s), (WOLFSSL_X509_STORE_
  * PEM_read_bio_X509 is called and the return error is lost.
  * The error that needs to be detected is: SSL_NO_PEM_HEADER.
  */
-#define ERR_GET_FUNC(l) (int)((((unsigned long)l) >> 12L) & 0xfffL)
+#define ERR_GET_FUNC(l) (int)((((unsigned long)(l)) >> 12L) & 0xfffL)
 
 #define PEM_F_PEM_DEF_CALLBACK  100
 

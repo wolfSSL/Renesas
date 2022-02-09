@@ -311,9 +311,7 @@
     <ClCompile Include="wolfcrypt\src\ge_low_mem.c" />
     <ClCompile Include="wolfcrypt\src\ge_operations.c" />
     <ClCompile Include="wolfcrypt\src\hash.c" />
-    <ClCompile Include="wolfcrypt\src\hc128.c" />
     <ClCompile Include="wolfcrypt\src\hmac.c" />
-    <ClCompile Include="wolfcrypt\src\idea.c" />
     <ClCompile Include="wolfcrypt\src\integer.c" />
     <ClCompile Include="wolfcrypt\src\kdf.c" />
     <ClCompile Include="wolfcrypt\src\logging.c" />
@@ -325,7 +323,6 @@
     <ClCompile Include="wolfcrypt\src\pkcs12.c" />
     <ClCompile Include="wolfcrypt\src\poly1305.c" />
     <ClCompile Include="wolfcrypt\src\pwdbased.c" />
-    <ClCompile Include="wolfcrypt\src\rabbit.c" />
     <ClCompile Include="wolfcrypt\src\random.c" />
     <ClCompile Include="wolfcrypt\src\rc2.c" />
     <ClCompile Include="wolfcrypt\src\ripemd.c" />

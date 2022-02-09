@@ -1917,7 +1917,7 @@ static int wc_PKCS7_BuildSignedAttributes(PKCS7* pkcs7, ESD* esd,
         if (signingTime == NULL || signingTimeSz == 0)
             return BAD_FUNC_ARG;
 
-        tm = XTIME(0);
+        tm = wc_Time(0);
         timeSz = GetAsnTimeString(&tm, signingTime, signingTimeSz);
         if (timeSz < 0)
             return timeSz;
@@ -2708,7 +2708,7 @@ static int PKCS7_EncodeSigned(PKCS7* pkcs7, ESD* esd,
     XMEMCPY(output2 + idx, esd->encContentDigest, esd->encContentDigestSz);
     idx += esd->encContentDigestSz;
 
-    if (output2 && output2Sz) {
+    if (output2Sz) {
         *output2Sz = idx;
         idx = 0; /* success */
     }
@@ -4441,17 +4441,34 @@ static int PKCS7_VerifySignedData(PKCS7* pkcs7, const byte* hashBuf,
                     return ret;
 
                 pkiMsg   = in = pkcs7->der;
-                pkiMsgSz = pkcs7->derSz = len;
+                inSz = pkcs7->derSz = len;
                 idx = 0;
-                if (GetSequence_ex(pkiMsg, &idx, &length, pkiMsgSz,
-                            NO_USER_CHECK) < 0)
-                    return ASN_PARSE_E;
+            #ifdef NO_PKCS7_STREAM
+                pkiMsgSz = len;
+            #else
+                wc_PKCS7_ResetStream(pkcs7);
+                if ((ret = wc_PKCS7_AddDataToStream(pkcs7, in, inSz,
+                                MAX_SEQ_SZ + MAX_VERSION_SZ + MAX_SEQ_SZ +
+                                MAX_LENGTH_SZ + ASN_TAG_SZ + MAX_OID_SZ +
+                                MAX_SEQ_SZ, &pkiMsg, &idx)) != 0) {
+                    break;
+                }
 
-            #ifndef NO_PKCS7_STREAM
-                if ((ret = wc_PKCS7_SetMaxStream(pkcs7, in, inSz)) != 0) {
+                pkiMsgSz = (pkcs7->stream->length > 0)? pkcs7->stream->length:
+                                                        inSz;
+
+                totalSz = pkiMsgSz;
+                if (pkiMsg2 && pkiMsg2Sz > 0) {
+                    totalSz += pkiMsg2Sz + pkcs7->contentSz;
+                }
+
+                if ((ret = wc_PKCS7_SetMaxStream(pkcs7, in, len)) != 0) {
                     break;
                 }
             #endif
+                if (GetSequence_ex(pkiMsg, &idx, &length, pkiMsgSz,
+                            NO_USER_CHECK) < 0)
+                    return ASN_PARSE_E;
         #else
                 ret = BER_INDEF_E;
         #endif
@@ -10487,8 +10504,13 @@ WOLFSSL_API int wc_PKCS7_DecodeEnvelopedData(PKCS7* pkcs7, byte* in,
 
         #ifdef ASN_BER_TO_DER
             /* check if content was BER and has been converted to DER */
-            if (pkcs7->derSz > 0)
+            if (pkcs7->derSz > 0) {
                 pkiMsg = in = pkcs7->der;
+                inSz = pkcs7->derSz;
+            #ifdef NO_PKCS7_STREAM
+                pkiMsgSz = pkcs7->derSz;
+            #endif
+            }
         #endif
 
             decryptedKey = (byte*)XMALLOC(MAX_ENCRYPTED_KEY_SZ, pkcs7->heap,
@@ -11860,11 +11882,9 @@ authenv_atrbend:
         #ifdef WOLFSSL_SMALL_STACK
             XFREE(decryptedKey, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
             decryptedKey = NULL;
-        #ifdef WOLFSSL_SMALL_STACK
             #ifndef NO_PKCS7_STREAM
             pkcs7->stream->key = NULL;
             #endif
-        #endif
         #endif
             ret = encryptedContentSz;
         #ifndef NO_PKCS7_STREAM

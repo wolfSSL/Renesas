@@ -92,7 +92,7 @@ int wc_HmacSetKey(Hmac* hmac, int type, const byte* key, word32 length)
     const char* ciphername = NULL;
 
     if ((hmac == NULL || (key == NULL && length != 0))) {
-        ret = BAD_FUNC_ARG;
+        return BAD_FUNC_ARG;
     }
 
 #ifdef HAVE_FIPS
@@ -173,7 +173,7 @@ int wc_HmacSetKey(Hmac* hmac, int type, const byte* key, word32 length)
         hmac->macType = type;
     }
 
-    if (ret == 0 && hmac->handle == NULL) {
+    if (hmac->handle != NULL) {
         kcapi_md_destroy(hmac->handle);
         hmac->handle = NULL;
     }

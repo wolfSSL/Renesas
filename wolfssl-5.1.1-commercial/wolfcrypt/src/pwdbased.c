@@ -161,7 +161,7 @@ int wc_PBKDF1(byte* output, const byte* passwd, int pLen, const byte* salt,
 
 #endif /* HAVE_PKCS5 */
 
-#ifdef HAVE_PBKDF2
+#if defined(HAVE_PBKDF2) && !defined(NO_HMAC)
 
 int wc_PBKDF2_ex(byte* output, const byte* passwd, int pLen, const byte* salt,
            int sLen, int iterations, int kLen, int hashType, void* heap, int devId)
@@ -269,7 +269,7 @@ int wc_PBKDF2(byte* output, const byte* passwd, int pLen, const byte* salt,
         hashType, NULL, INVALID_DEVID);
 }
 
-#endif /* HAVE_PBKDF2 */
+#endif /* HAVE_PBKDF2 && !NO_HMAC */
 
 #ifdef HAVE_PKCS12
 
@@ -558,8 +558,6 @@ int wc_PKCS12_PBKDF_ex(byte* output, const byte* passwd, int passLen,
 
 /* (2^32 - 1) */
 #define SCRYPT_WORD32_MAX 4294967295U
-/* (2^32 - 1) * 32, used in a couple of scrypt max calculations. */
-#define SCRYPT_MAX 137438953440UL
 
 /* One round of Salsa20/8.
  * Code taken from RFC 7914: scrypt PBKDF.
@@ -750,7 +748,13 @@ int wc_scrypt(byte* output, const byte* passwd, int passLen,
     if (cost < 1 || cost >= 128 * blockSize / 8 || parallel < 1 || dkLen < 1)
         return BAD_FUNC_ARG;
 
-    if ((word32)parallel > (SCRYPT_MAX / (128 * blockSize)))
+    /* The following comparison used to be:
+     *    ((word32)parallel > (SCRYPT_MAX / (128 * blockSize)))
+     * where SCRYPT_MAX is (2^32 - 1) * 32. For some compilers, the RHS of
+     * the comparison is greater than parallel's type. It wouldn't promote
+     * both sides to word64. What follows is just arithmetic simplification.
+     */
+    if ((word32)parallel > (SCRYPT_WORD32_MAX / (4 * blockSize)))
         return BAD_FUNC_ARG;
 
     bSz = 128 * blockSize;

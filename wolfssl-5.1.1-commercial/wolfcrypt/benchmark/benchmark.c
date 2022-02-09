@@ -142,8 +142,6 @@
 #include <wolfssl/wolfcrypt/random.h>
 #include <wolfssl/wolfcrypt/des3.h>
 #include <wolfssl/wolfcrypt/arc4.h>
-#include <wolfssl/wolfcrypt/hc128.h>
-#include <wolfssl/wolfcrypt/rabbit.h>
 #include <wolfssl/wolfcrypt/chacha.h>
 #include <wolfssl/wolfcrypt/chacha20_poly1305.h>
 #include <wolfssl/wolfcrypt/aes.h>
@@ -161,14 +159,14 @@
 #ifndef NO_HMAC
     #include <wolfssl/wolfcrypt/hmac.h>
 #endif
+#ifdef WOLFSSL_SIPHASH
+    #include <wolfssl/wolfcrypt/siphash.h>
+#endif
 #ifndef NO_PWDBASED
     #include <wolfssl/wolfcrypt/pwdbased.h>
 #endif
 #ifdef HAVE_ECC
     #include <wolfssl/wolfcrypt/ecc.h>
-#endif
-#ifdef HAVE_IDEA
-    #include <wolfssl/wolfcrypt/idea.h>
 #endif
 #ifdef HAVE_CURVE25519
     #include <wolfssl/wolfcrypt/curve25519.h>
@@ -266,14 +264,12 @@
 #define BENCH_AES_CCM            0x00000020
 #define BENCH_CAMELLIA           0x00000100
 #define BENCH_ARC4               0x00000200
-#define BENCH_HC128              0x00000400
-#define BENCH_RABBIT             0x00000800
 #define BENCH_CHACHA20           0x00001000
 #define BENCH_CHACHA20_POLY1305  0x00002000
 #define BENCH_DES                0x00004000
-#define BENCH_IDEA               0x00008000
 #define BENCH_AES_CFB            0x00010000
 #define BENCH_AES_OFB            0x00020000
+#define BENCH_AES_SIV            0x00040000
 /* Digest algorithms. */
 #define BENCH_MD5                0x00000001
 #define BENCH_POLY1305           0x00000002
@@ -306,6 +302,7 @@
                                   BENCH_HMAC_SHA224 | BENCH_HMAC_SHA256 | \
                                   BENCH_HMAC_SHA384 | BENCH_HMAC_SHA512)
 #define BENCH_PBKDF2             0x00000100
+#define BENCH_SIPHASH            0x00000200
 
 /* Asymmetric algorithms. */
 #define BENCH_RSA_KEYGEN         0x00000001
@@ -426,17 +423,14 @@ static const bench_alg bench_cipher_opt[] = {
 #ifdef HAVE_AESCCM
     { "-aes-ccm",            BENCH_AES_CCM           },
 #endif
+#ifdef WOLFSSL_AES_SIV
+    { "-aes-siv",            BENCH_AES_SIV           },
+#endif
 #ifdef HAVE_CAMELLIA
     { "-camellia",           BENCH_CAMELLIA          },
 #endif
 #ifndef NO_RC4
     { "-arc4",               BENCH_ARC4              },
-#endif
-#ifdef HAVE_HC128
-    { "-hc128",              BENCH_HC128             },
-#endif
-#ifndef NO_RABBIT
-    { "-rabbit",             BENCH_RABBIT            },
 #endif
 #ifdef HAVE_CHACHA
     { "-chacha20",           BENCH_CHACHA20          },
@@ -446,9 +440,6 @@ static const bench_alg bench_cipher_opt[] = {
 #endif
 #ifndef NO_DES3
     { "-des",                BENCH_DES               },
-#endif
-#ifdef HAVE_IDEA
-    { "-idea",               BENCH_IDEA              },
 #endif
     { NULL, 0 }
 };
@@ -536,6 +527,9 @@ static const bench_alg bench_mac_opt[] = {
     #endif
     #ifndef NO_PWDBASED
     { "-pbkdf2",             BENCH_PBKDF2            },
+    #endif
+    #ifdef WOLFSSL_SIPHASH
+    { "-siphash",            BENCH_SIPHASH           },
     #endif
 #endif
     { NULL, 0 }
@@ -779,12 +773,12 @@ static const char* bench_desc_words[][14] = {
     #define END_INTEL_CYCLES   total_cycles = get_intel_cycles() - total_cycles;
     /* s == size in bytes that 1 count represents, normally BENCH_SIZE */
     #define SHOW_INTEL_CYCLES(b, n, s) \
-        XSNPRINTF(b + XSTRLEN(b), n - XSTRLEN(b), " %s = %6.2f\n", \
+        XSNPRINTF((b) + XSTRLEN(b), (n) - XSTRLEN(b), " %s = %6.2f\n", \
             bench_result_words1[lng_index][2], \
-            count == 0 ? 0 : (float)total_cycles / ((word64)count*s))
+            count == 0 ? 0 : (float)total_cycles / ((word64)count*(s)))
     #define SHOW_INTEL_CYCLES_CSV(b, n, s) \
-        XSNPRINTF(b + XSTRLEN(b), n - XSTRLEN(b), "%.2f,\n", \
-            count == 0 ? 0 : (float)total_cycles / ((word64)count*s))
+        XSNPRINTF((b) + XSTRLEN(b), (n) - XSTRLEN(b), "%.2f,\n", \
+            count == 0 ? 0 : (float)total_cycles / ((word64)count*(s)))
 #elif defined(LINUX_CYCLE_COUNT)
     #include <linux/perf_event.h>
     #include <sys/syscall.h>
@@ -867,7 +861,7 @@ static const char* bench_desc_words[][14] = {
 #ifdef WOLFSSL_CURRTIME_REMAP
     #define current_time WOLFSSL_CURRTIME_REMAP
 #elif !defined(HAVE_STACK_SIZE)
-    double current_time(int);
+    double current_time(int reset);
 #endif
 
 #if defined(DEBUG_WOLFSSL) && !defined(HAVE_VALGRIND) && \
@@ -1099,7 +1093,7 @@ static THREAD_LS_T int devId = INVALID_DEVID;
         agreeTimes = 100
     };
     static int    numBlocks  = 5; /* how many megs to test (en/de)cryption */
-    static word32 bench_size = (1024*1024ul);
+    static word32 bench_size = (1024*1024UL);
 #endif
 static int base2 = 1;
 static int digest_stream = 1;
@@ -1130,7 +1124,11 @@ static const XGEN_ALIGN byte bench_key_buf[] =
     0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
     0xfe,0xde,0xba,0x98,0x76,0x54,0x32,0x10,
     0x89,0xab,0xcd,0xef,0x01,0x23,0x45,0x67,
-    0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef
+    0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
+    0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,
+    0xf8,0xf9,0xfa,0xfb,0xfc,0xfd,0xfe,0xff,
+    0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+    0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,
 };
 
 static const XGEN_ALIGN byte bench_iv_buf[] =
@@ -1166,7 +1164,7 @@ static void benchmark_static_init(void)
         bench_size = (1024ul);
     #else
         numBlocks  = 5; /* how many megs to test (en/de)cryption */
-        bench_size = (1024*1024ul);
+        bench_size = (1024*1024UL);
     #endif
     #if defined(HAVE_AESGCM) || defined(HAVE_AESCCM)
         aesAuthAddSz = AES_AUTH_ADD_SZ;
@@ -1385,8 +1383,8 @@ static void bench_stats_sym_finish(const char* desc, int doAsync, int count,
 
     if (base2) {
         /* determine if we should show as KB or MB */
-        if (blocks > (1024ul * 1024ul)) {
-            blocks /= (1024ul * 1024ul);
+        if (blocks > (1024UL * 1024UL)) {
+            blocks /= (1024UL * 1024UL);
             blockType = "MB";
         }
         else if (blocks > 1024) {
@@ -1399,8 +1397,8 @@ static void bench_stats_sym_finish(const char* desc, int doAsync, int count,
     }
     else {
         /* determine if we should show as kB or mB */
-        if (blocks > (1000ul * 1000ul)) {
-            blocks /= (1000ul * 1000ul);
+        if (blocks > (1000UL * 1000UL)) {
+            blocks /= (1000UL * 1000UL);
             blockType = "mB";
         }
         else if (blocks > 1000) {
@@ -1725,6 +1723,10 @@ static void* benchmarks_do(void* args)
     if (bench_all || (bench_cipher_algs & BENCH_AES_CCM))
         bench_aesccm();
 #endif
+#ifdef WOLFSSL_AES_SIV
+    if (bench_all || (bench_cipher_algs & BENCH_AES_SIV))
+        bench_aessiv();
+#endif
 #endif /* !NO_AES */
 
 #ifdef HAVE_CAMELLIA
@@ -1741,14 +1743,6 @@ static void* benchmarks_do(void* args)
         bench_arc4(1);
     #endif
     }
-#endif
-#ifdef HAVE_HC128
-    if (bench_all || (bench_cipher_algs & BENCH_HC128))
-        bench_hc128();
-#endif
-#ifndef NO_RABBIT
-    if (bench_all || (bench_cipher_algs & BENCH_RABBIT))
-        bench_rabbit();
 #endif
 #ifdef HAVE_CHACHA
     if (bench_all || (bench_cipher_algs & BENCH_CHACHA20))
@@ -1770,11 +1764,6 @@ static void* benchmarks_do(void* args)
     #endif
     }
 #endif
-#ifdef HAVE_IDEA
-    if (bench_all || (bench_cipher_algs & BENCH_IDEA))
-        bench_idea();
-#endif
-
 #ifndef NO_MD5
     if (bench_all || (bench_digest_algs & BENCH_MD5)) {
     #ifndef NO_SW_BENCH
@@ -1978,6 +1967,11 @@ static void* benchmarks_do(void* args)
     #ifndef NO_PWDBASED
         if (bench_all || (bench_mac_algs & BENCH_PBKDF2)) {
             bench_pbkdf2();
+        }
+    #endif
+    #ifdef WOLFSSL_SIPHASH
+        if (bench_all || (bench_mac_algs & BENCH_SIPHASH)) {
+            bench_siphash();
         }
     #endif
 #endif /* NO_HMAC */
@@ -2253,6 +2247,7 @@ exit:
     (void)bench_mac_algs;
     (void)bench_asym_algs;
     (void)bench_other_algs;
+    (void)bench_pq_asym_algs;
 
     return NULL;
 }
@@ -3160,6 +3155,58 @@ void bench_aesccm(void)
     WC_FREE_VAR(bench_tag, HEAP_HINT);
 }
 #endif /* HAVE_AESCCM */
+
+
+#ifdef WOLFSSL_AES_SIV
+static void bench_aessiv_internal(const byte* key, word32 keySz, const char*
+                                  encLabel, const char* decLabel)
+{
+    int i;
+    int ret = 0;
+    byte assoc[AES_BLOCK_SIZE];
+    byte nonce[AES_BLOCK_SIZE];
+    byte siv[AES_BLOCK_SIZE];
+    int count = 0;
+    double start;
+
+    bench_stats_start(&count, &start);
+    do {
+        for (i = 0; i < numBlocks; i++) {
+            ret = wc_AesSivEncrypt(key, keySz, assoc, AES_BLOCK_SIZE, nonce,
+                                   AES_BLOCK_SIZE, bench_plain, bench_size,
+                                   siv, bench_cipher);
+            if (ret != 0) {
+                printf("wc_AesSivEncrypt failed (%d)\n", ret);
+                return;
+            }
+        }
+        count += i;
+    } while (bench_stats_sym_check(start));
+    bench_stats_sym_finish(encLabel, 0, count, bench_size, start, ret);
+
+    bench_stats_start(&count, &start);
+    do {
+        for (i = 0; i < numBlocks; i++) {
+            ret = wc_AesSivDecrypt(key, keySz, assoc, AES_BLOCK_SIZE, nonce,
+                                   AES_BLOCK_SIZE, bench_cipher, bench_size,
+                                   siv, bench_plain);
+            if (ret != 0) {
+                printf("wc_AesSivDecrypt failed (%d)\n", ret);
+                return;
+            }
+        }
+        count += i;
+    } while (bench_stats_sym_check(start));
+    bench_stats_sym_finish(decLabel, 0, count, bench_size, start, ret);
+}
+
+void bench_aessiv(void)
+{
+    bench_aessiv_internal(bench_key, 32, "AES-256-SIV-enc", "AES-256-SIV-dec");
+    bench_aessiv_internal(bench_key, 48, "AES-384-SIV-enc", "AES-384-SIV-dec");
+    bench_aessiv_internal(bench_key, 64, "AES-512-SIV-enc", "AES-512-SIV-dec");
+}
+#endif /* WOLFSSL_AES_SIV */
 #endif /* !NO_AES */
 
 
@@ -3301,32 +3348,6 @@ exit:
 #endif /* !NO_DES3 */
 
 
-#ifdef HAVE_IDEA
-void bench_idea(void)
-{
-    Idea   enc;
-    double start;
-    int    ret = 0, i, count;
-
-    ret = wc_IdeaSetKey(&enc, bench_key, IDEA_KEY_SIZE, bench_iv,
-        IDEA_ENCRYPTION);
-    if (ret != 0) {
-        printf("Des3_SetKey failed, ret = %d\n", ret);
-        return;
-    }
-
-    bench_stats_start(&count, &start);
-    do {
-        for (i = 0; i < numBlocks; i++) {
-            wc_IdeaCbcEncrypt(&enc, bench_plain, bench_cipher, BENCH_SIZE);
-        }
-        count += i;
-    } while (bench_stats_sym_check(start));
-    bench_stats_sym_finish("IDEA", 0, count, bench_size, start, ret);
-}
-#endif /* HAVE_IDEA */
-
-
 #ifndef NO_RC4
 void bench_arc4(int doAsync)
 {
@@ -3380,48 +3401,6 @@ exit:
     }
 }
 #endif /* !NO_RC4 */
-
-
-#ifdef HAVE_HC128
-void bench_hc128(void)
-{
-    HC128  enc;
-    double start;
-    int    i, count;
-
-    wc_Hc128_SetKey(&enc, bench_key, bench_iv);
-
-    bench_stats_start(&count, &start);
-    do {
-        for (i = 0; i < numBlocks; i++) {
-            wc_Hc128_Process(&enc, bench_cipher, bench_plain, BENCH_SIZE);
-        }
-        count += i;
-    } while (bench_stats_sym_check(start));
-    bench_stats_sym_finish("HC128", 0, count, bench_size, start, 0);
-}
-#endif /* HAVE_HC128 */
-
-
-#ifndef NO_RABBIT
-void bench_rabbit(void)
-{
-    Rabbit enc;
-    double start;
-    int    i, count;
-
-    wc_RabbitSetKey(&enc, bench_key, bench_iv);
-
-    bench_stats_start(&count, &start);
-    do {
-        for (i = 0; i < numBlocks; i++) {
-            wc_RabbitProcess(&enc, bench_cipher, bench_plain, BENCH_SIZE);
-        }
-        count += i;
-    } while (bench_stats_sym_check(start));
-    bench_stats_sym_finish("RABBIT", 0, count, bench_size, start, 0);
-}
-#endif /* NO_RABBIT */
 
 
 #ifdef HAVE_CHACHA
@@ -4741,6 +4720,37 @@ void bench_pbkdf2(void)
 
 #endif /* NO_HMAC */
 
+#ifdef WOLFSSL_SIPHASH
+void bench_siphash(void)
+{
+    double start;
+    int    ret = 0, count;
+    const char* passwd16 = "passwordpassword";
+    byte out[16];
+    int    i;
+
+    bench_stats_start(&count, &start);
+    do {
+        for (i = 0; i < numBlocks; i++) {
+            ret = wc_SipHash((const byte*)passwd16, bench_plain, BENCH_SIZE,
+                out, 8);
+        }
+        count += i;
+    } while (bench_stats_sym_check(start));
+    bench_stats_sym_finish("SipHash-8", 1, count, BENCH_SIZE, start, ret);
+
+    bench_stats_start(&count, &start);
+    do {
+        for (i = 0; i < numBlocks; i++) {
+            ret = wc_SipHash((const byte*)passwd16, bench_plain, BENCH_SIZE,
+                out, 16);
+        }
+        count += i;
+    } while (bench_stats_sym_check(start));
+    bench_stats_sym_finish("SipHash-16", 1, count, BENCH_SIZE, start, ret);
+}
+#endif
+
 #ifndef NO_RSA
 
 #if defined(WOLFSSL_KEY_GEN)
@@ -4927,7 +4937,7 @@ static void bench_rsa_helper(int doAsync, RsaKey rsaKey[BENCH_MAX_PENDING],
     const char* messageStr = TEST_STRING;
     const int   len = (int)TEST_STRING_SZ;
 #endif
-    double      start = 0.0f;
+    double      start = 0.0F;
     const char**desc = bench_desc_words[lng_index];
 #ifndef WOLFSSL_RSA_VERIFY_ONLY
     WC_DECLARE_VAR(message, byte, TEST_STRING_SZ, HEAP_HINT);
@@ -5227,7 +5237,7 @@ void bench_rsa_key(int doAsync, int rsaKeySz)
     int     ret = 0, i, pending = 0;
     RsaKey  rsaKey[BENCH_MAX_PENDING];
     int     isPending[BENCH_MAX_PENDING];
-    long    exp = 65537l;
+    long    exp = 65537L;
 
     /* clear for done cleanup */
     XMEMSET(rsaKey, 0, sizeof(rsaKey));
@@ -5306,7 +5316,7 @@ void bench_dh(int doAsync)
     int    ret = 0, i;
     int    count = 0, times, pending = 0;
     const byte* tmp = NULL;
-    double start = 0.0f;
+    double start = 0.0F;
     DhKey  dhKey[BENCH_MAX_PENDING];
     int    dhKeySz = BENCH_DH_KEY_SIZE * 8; /* used in printf */
     const char**desc = bench_desc_words[lng_index];

@@ -167,6 +167,10 @@ int wc_RNG_GenerateByte(WC_RNG* rng, byte* b)
 #include <wolfssl/wolfcrypt/port/iotsafe/iotsafe.h>
 #endif
 
+#if defined(WOLFSSL_HAVE_PSA) && !defined(WOLFSSL_PSA_NO_RNG)
+#include <wolfssl/wolfcrypt/port/psa/psa.h>
+#endif
+
 #if defined(HAVE_INTEL_RDRAND) || defined(HAVE_INTEL_RDSEED)
     static word32 intel_flags = 0;
     static void wc_InitRng_IntelRD(void)
@@ -420,6 +424,10 @@ static int Hash_DRBG_Reseed(DRBG_internal* drbg, const byte* seed, word32 seedSz
 {
     byte newV[DRBG_SEED_LEN];
 
+    if (drbg == NULL) {
+        return DRBG_FAILURE;
+    }
+
     XMEMSET(newV, 0, DRBG_SEED_LEN);
 
     if (Hash_df(drbg, newV, sizeof(newV), drbgReseed,
@@ -446,6 +454,16 @@ int wc_RNG_DRBG_Reseed(WC_RNG* rng, const byte* seed, word32 seedSz)
 {
     if (rng == NULL || seed == NULL) {
         return BAD_FUNC_ARG;
+    }
+
+    if (rng->drbg == NULL) {
+    #if defined(HAVE_INTEL_RDSEED) || defined(HAVE_INTEL_RDRAND)
+        if (IS_INTEL_RDRAND(intel_flags)) {
+            /* using RDRAND not DRBG, so return success */
+            return 0;
+        }
+        return BAD_FUNC_ARG;
+    #endif
     }
 
     return Hash_DRBG_Reseed((DRBG_internal *)rng->drbg, seed, seedSz);
@@ -586,6 +604,10 @@ static int Hash_DRBG_Generate(DRBG_internal* drbg, byte* out, word32 outSz)
 #endif
     byte type;
     word32 reseedCtr;
+
+    if (drbg == NULL) {
+        return DRBG_FAILURE;
+    }
 
     if (drbg->reseedCtr == RESEED_INTERVAL) {
         return DRBG_NEED_RESEED;
@@ -998,8 +1020,8 @@ int wc_RNG_GenerateBlock(WC_RNG* rng, byte* output, word32 sz)
                 ret = wc_RNG_TestSeed(newSeed, SEED_SZ + SEED_BLOCK_SZ);
 
             if (ret == DRBG_SUCCESS)
-                ret = Hash_DRBG_Reseed((DRBG_internal *)rng->drbg, newSeed + SEED_BLOCK_SZ,
-                                       SEED_SZ);
+                ret = Hash_DRBG_Reseed((DRBG_internal *)rng->drbg,
+                                       newSeed + SEED_BLOCK_SZ, SEED_SZ);
             if (ret == DRBG_SUCCESS)
                 ret = Hash_DRBG_Generate((DRBG_internal *)rng->drbg, output, sz);
 
@@ -2458,7 +2480,7 @@ int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
 
     int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
     {
-        int ret;
+        int ret = 0;
         word32 buffer[4];
 
         while (sz > 0) {
@@ -2483,7 +2505,7 @@ int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
 
     int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
     {
-        int ret;
+        int ret = 0;
         word32 buffer[4];
 
         while (sz > 0) {
@@ -2541,7 +2563,7 @@ int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
                 return -1;
             }
             ret = WOLFSSL_SCE_TRNG_HANDLE.p_api->read(WOLFSSL_SCE_TRNG_HANDLE.p_ctrl,
-                                                      (word32*)tmp, 1);
+                                                      (word32*)&tmp, 1);
             if (ret != SSP_SUCCESS) {
                 return -1;
             }
