@@ -39,7 +39,7 @@ in the subdirectory linked below.
 ### Available Example Projects
 
 wolfSSL maintains example projects for the following supported Renesas
-platforms. These examples are located in the ```wolfssl/IDE/Renesas```
+platforms. These examples are located in the ```wolfssl-X.X.X-commercial/IDE/Renesas/e2studio```
 directory.
 
 |Microcontroller|Platform|Example Project|
