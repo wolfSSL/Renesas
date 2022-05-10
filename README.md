@@ -16,7 +16,7 @@ This repository currently contains the following wolfSSL product versions.
 
 |Product|Version|Notes|
 |:--|:--|:--|
-|wolfSSL|5.2.0 stable|Includes RA6M3 FSP 3.5.0 and RX72N FreeRTOS example project.|
+|wolfSSL|5.3.0 stable|Includes updated TSIP 1.15 support for GR-ROSE RX65N.|
 
 ## wolfSSL Renesas Support
 
@@ -33,7 +33,8 @@ in the subdirectory linked below.
 |Synergy S7G2|SSP 1.7.0|
 |RA6M3|FSP 3.5.0|
 |RA6M4|FSP 3.5.0|
-|RX65N|TSIP 1.14|
+|RX65N (GR-ROSE)|TSIP 1.15|
+|RX65N (RSK-RX65N)|TSIP 1.14|
 |RX72N|TSIP 1.14|
 
 ### Available Example Projects
@@ -44,12 +45,12 @@ directory.
 
 |Microcontroller|Platform|Example Project|
 |:--|:--|:--|
-|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/DK-S7G2)|
-|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/RA6M3)|
-|RA6M4|EK-RA6M4|[IDE/Renesas/e2studio/RA6M4](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/RA6M4)|
-|RX65N|GR-ROSE|[IDE/Renesas/e2studio/RX65N/GR-ROSE](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/RX65N/GR-ROSE)|
-|RX65N|Renesas Starter Kit＋ for RX65N-2MB|[IDE/Renesas/e2studio/RX65N/RSK](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/RX65N/RSK)|
-|RX72N|RX72N EnvisionKit|[IDE/Renesas/e2studio/RX72N/EnvisionKit](./wolfssl-5.2.0-commercial/IDE/Renesas/e2studio/RX72N/EnvisionKit)|
+|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/DK-S7G2)|
+|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/RA6M3)|
+|RA6M4|EK-RA6M4|[IDE/Renesas/e2studio/RA6M4](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/RA6M4)|
+|RX65N|GR-ROSE|[IDE/Renesas/e2studio/RX65N/GR-ROSE](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/RX65N/GR-ROSE)|
+|RX65N|Renesas Starter Kit＋ for RX65N-2MB|[IDE/Renesas/e2studio/RX65N/RSK](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/RX65N/RSK)|
+|RX72N|RX72N EnvisionKit|[IDE/Renesas/e2studio/RX72N/EnvisionKit](./wolfssl-5.3.0-commercial/IDE/Renesas/e2studio/RX72N/EnvisionKit)|
 
 ## Additional wolfSSL Products to Explore
 
