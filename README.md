@@ -16,7 +16,7 @@ This repository currently contains the following wolfSSL product versions.
 
 |Product|Version|Notes|
 |:--|:--|:--|
-|wolfSSL|5.5.4 stable|Latest release of wolfSSL|
+|wolfSSL|5.6.0 stable|Latest release of wolfSSL|
 
 ## wolfSSL Renesas Support
 
@@ -45,12 +45,12 @@ directory.
 
 |Microcontroller|Platform|Example Project|
 |:--|:--|:--|
-|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/DK-S7G2)|
-|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/RA6M3)|
-|RA6M4|EK-RA6M4|[IDE/Renesas/e2studio/RA6M4](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/RA6M4)|
-|RX65N|GR-ROSE|[IDE/Renesas/e2studio/RX65N/GR-ROSE](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/RX65N/GR-ROSE)|
-|RX65N|Renesas Starter Kit＋ for RX65N-2MB|[IDE/Renesas/e2studio/RX65N/RSK](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/RX65N/RSK)|
-|RX72N|RX72N EnvisionKit|[IDE/Renesas/e2studio/RX72N/EnvisionKit](./wolfssl-5.5.4-commercial/IDE/Renesas/e2studio/RX72N/EnvisionKit)|
+|Synergy S7G2|DK-S7G2|[IDE/Renesas/e2studio/DK-S7G2](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/DK-S7G2)|
+|RA6M3|EK-RA6M3|[IDE/Renesas/e2studio/RA6M3](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/RA6M3)|
+|RA6M4|EK-RA6M4|[IDE/Renesas/e2studio/RA6M4](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/RA6M4)|
+|RX65N|GR-ROSE|[IDE/Renesas/e2studio/RX65N/GR-ROSE](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/RX65N/GR-ROSE)|
+|RX65N|Renesas Starter Kit＋ for RX65N-2MB|[IDE/Renesas/e2studio/RX65N/RSK](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/RX65N/RSK)|
+|RX72N|RX72N EnvisionKit|[IDE/Renesas/e2studio/RX72N/EnvisionKit](./wolfssl-5.6.0-commercial/IDE/Renesas/e2studio/RX72N/EnvisionKit)|
 
 ## Additional wolfSSL Products to Explore
 
