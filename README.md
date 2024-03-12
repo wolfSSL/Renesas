@@ -28,15 +28,15 @@ in the subdirectory linked below.
 
 ### Current Software Package / Driver Support
 
-|MCU|Software / Driver|
-|:--|:--|
-|Synergy S7G2|SSP 1.7.0|
-|RA6M3|FSP 3.5.0|
-|RA6M4|FSP 3.5.0|
-|RX65N (GR-ROSE)|TSIP 1.15|
-|RX65N (RSK-RX65N)|TSIP 1.15|
-|RX72N|TSIP 1.15|
-|RZN2L|FSP 1.2.0|RSIP v1.3.0+fsp.1.2.0|
+|MCU|wolfSSL Commercial License Included|Software / Driver|
+|:--|:--|:--|
+|Synergy S7G2|Yes|SSP 1.7.0|
+|RA6M3|Yes|FSP 3.5.0|
+|RA6M4|Yes|FSP 3.5.0|
+|RX65N (GR-ROSE)|Yes|TSIP 1.15|
+|RX65N (RSK-RX65N)|Yes|TSIP 1.15|
+|RX72N|Yes|TSIP 1.15|
+|RZN2L|No[^1]|FSP 1.2.0 RSIP v1.3.0+fsp.1.2.0|
 
 ### Available Example Projects
 
@@ -88,4 +88,6 @@ directory.
 ## Support
 
 For support inquiries and questions, please email support@wolfssl.com. Feel free to reach out to info@wolfssl.jp as well.
+
+[^1]: Commercial license can be purchased from wolfSSL, contact licensing@wolfssl.com
 
