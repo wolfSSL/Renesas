@@ -33,9 +33,9 @@ in the subdirectory linked below.
 |Synergy S7G2|Yes|SSP 1.7.0|
 |RA6M3|Yes|FSP 3.5.0|
 |RA6M4|Yes|FSP 3.5.0|
-|RX65N (GR-ROSE)|Yes|TSIP 1.15|
-|RX65N (RSK-RX65N)|Yes|TSIP 1.15|
-|RX72N|Yes|TSIP 1.15|
+|RX65N (GR-ROSE)|Yes|TSIP 1.17|
+|RX65N (RSK-RX65N)|Yes|TSIP 1.17|
+|RX72N|Yes|TSIP 1.17|
 |RZN2L|No[^1]|FSP 1.2.0 RSIP v1.3.0+fsp.1.2.0|
 
 ### Available Example Projects
