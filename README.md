@@ -32,7 +32,7 @@ in the subdirectory linked below.
 |:--|:--|:--|
 |Synergy S7G2|Yes|SSP 1.7.0|
 |RA6M3|Yes|FSP 3.5.0|
-|RA6M4|Yes|FSP 3.5.0|
+|RA6M4|Yes|FSP 5.4.0|
 |RX65N (GR-ROSE)|Yes|TSIP 1.21|
 |RX65N (RSK-RX65N)|Yes|TSIP 1.21|
 |RX72N|Yes|TSIP 1.21|
