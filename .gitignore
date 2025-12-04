@@ -350,8 +350,6 @@ IDE/XCODE/Index
 
 # ARM DS-5 && Eclipse
 \.settings/
-\.cproject
-\.project
 \.autotools
 
 # Renesas e2studio
